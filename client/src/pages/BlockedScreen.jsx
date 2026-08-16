@@ -1,12 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
-  GraduationCap,
   LifeBuoy,
   LogOut,
   Mail,
   ShieldAlert,
 } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
 import useAuthStore from "../store/authStore";
 
 const BlockedScreen = () => {
@@ -24,14 +25,15 @@ const BlockedScreen = () => {
         <div className="max-w-5xl mx-auto h-full px-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center shadow-sm">
-              <GraduationCap className="w-5 h-5 text-primary-content" />
+              <FontAwesomeIcon
+                icon={faUserGraduate}
+                className="w-8 h-8 text-primary-content"
+                fontSize={24}
+              />
             </div>
             <span className="text-lg font-bold text-primary">EduConnect</span>
           </div>
-          <button
-            onClick={handleLogout}
-            className="btn btn-ghost btn-sm gap-2"
-          >
+          <button onClick={handleLogout} className="btn btn-ghost btn-sm gap-2">
             <LogOut className="w-4 h-4" />
             Logout
           </button>
@@ -58,9 +60,9 @@ const BlockedScreen = () => {
 
                   <p className="text-sm text-base-content/60 leading-relaxed">
                     Your account is currently suspended
-                    {user?.blockedReason ? " for the reason below" : ""}. If
-                    you believe this was a mistake, contact support and include
-                    the email linked to your EduConnect account.
+                    {user?.blockedReason ? " for the reason below" : ""}. If you
+                    believe this was a mistake, contact support and include the
+                    email linked to your EduConnect account.
                   </p>
 
                   <div className="mt-5 space-y-3">
