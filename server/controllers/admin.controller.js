@@ -4,6 +4,10 @@ const JobPost = require('../models/JobPost');
 const Story = require('../models/Story');
 const Notification = require('../models/Notification');
 const { getIO } = require('../config/socket');
+const {
+  getAdminSettings: readAdminSettings,
+  updateAdminSettings: saveAdminSettings,
+} = require('../utils/adminSettings');
 
 const CONTENT_MODELS = {
   post: { Model: Post, authorField: 'author', populate: 'author' },
@@ -26,13 +30,36 @@ const syncLinkedJobFeedPost = async (type, content, status, moderationMeta) => {
   }
 };
 
-let adminSettings = {
-  autoApprove: false,
-  autoBlockThreshold: 3,
-  emailNotifications: true,
-  moderationEnabled: true,
-  requireReviewNewUsers: true,
-  contentModerationRules: true,
+const syncUserTrustStatus = (user) => {
+  const activeTrustBadges = new Set(
+    (user.badges || [])
+      .filter((badge) => badge.isActive !== false)
+      .map((badge) => badge.type)
+  );
+
+  user.isEmailVerified = activeTrustBadges.has('email_verified');
+  user.isPhoneVerified = activeTrustBadges.has('phone_verified');
+
+  if (activeTrustBadges.has('verified_institution')) {
+    user.isVerified = true;
+    user.verifiedStatus = 'institution';
+    return;
+  }
+
+  if (activeTrustBadges.has('top_contributor')) {
+    user.isVerified = true;
+    user.verifiedStatus = 'top_contributor';
+    return;
+  }
+
+  if (activeTrustBadges.has('email_verified')) {
+    user.isVerified = true;
+    user.verifiedStatus = 'email';
+    return;
+  }
+
+  user.isVerified = false;
+  user.verifiedStatus = 'none';
 };
 
 // @desc    Get all users (admin)
@@ -92,7 +119,7 @@ const blockUser = async (req, res) => {
       blockedAt: new Date(),
       blockedReason: body.reason || 'Violated community guidelines',
       adminNotes: body.notes || '',
-    }, { new: true });
+    }, { returnDocument: 'after' });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
@@ -113,7 +140,7 @@ const unblockUser = async (req, res) => {
       isBlocked: false,
       blockedAt: null,
       blockedReason: null,
-    }, { new: true });
+    }, { returnDocument: 'after' });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
@@ -133,7 +160,7 @@ const updateUserNotes = async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.params.id,
       { adminNotes: req.body?.notes || '' },
-      { new: true }
+      { returnDocument: 'after' }
     ).select('-password -verificationToken -resetPasswordToken -otp');
 
     if (!user) {
@@ -214,6 +241,7 @@ const grantBadge = async (req, res) => {
       isActive: true,
     });
 
+    syncUserTrustStatus(user);
     await user.save();
 
     res.json({ success: true, user });
@@ -244,6 +272,7 @@ const revokeBadge = async (req, res) => {
     }
 
     user.badges[badgeIndex].isActive = false;
+    syncUserTrustStatus(user);
     await user.save();
 
     res.json({ success: true, user });
@@ -340,11 +369,14 @@ const approveContent = async (req, res) => {
 
     // Notify content creator
     try {
-      const io = getIO();
-      io.to(`user_${content[config.authorField]}`).emit('content_approved', {
-        type,
-        id: content._id,
-      });
+      const settings = await readAdminSettings();
+      if (settings.notifyCreators) {
+        const io = getIO();
+        io.to(`user_${content[config.authorField]}`).emit('content_approved', {
+          type,
+          id: content._id,
+        });
+      }
     } catch (socketErr) {}
 
     res.json({ success: true, content });
@@ -366,6 +398,11 @@ const rejectContent = async (req, res) => {
       return res.status(400).json({ message: 'Invalid content type.' });
     }
 
+    const settings = await readAdminSettings();
+    if (settings.requireRejectReason && !body.notes?.trim()) {
+      return res.status(400).json({ message: 'Rejection notes are required by admin settings.' });
+    }
+
     const content = await config.Model.findById(id);
 
     if (!content) {
@@ -384,12 +421,14 @@ const rejectContent = async (req, res) => {
 
     // Notify content creator
     try {
-      const io = getIO();
-      io.to(`user_${content[config.authorField]}`).emit('content_rejected', {
-        type,
-        id: content._id,
-        reason: body.notes,
-      });
+      if (settings.notifyCreators) {
+        const io = getIO();
+        io.to(`user_${content[config.authorField]}`).emit('content_rejected', {
+          type,
+          id: content._id,
+          reason: body.notes,
+        });
+      }
     } catch (socketErr) {}
 
     res.json({ success: true, content });
@@ -402,18 +441,25 @@ const rejectContent = async (req, res) => {
 // @desc    Get admin settings
 // @route   GET /api/admin/settings
 const getAdminSettings = async (req, res) => {
-  res.json({ success: true, settings: adminSettings });
+  try {
+    const settings = await readAdminSettings();
+    res.json({ success: true, settings });
+  } catch (error) {
+    console.error('Get admin settings error:', error);
+    res.status(500).json({ message: 'Server error.' });
+  }
 };
 
 // @desc    Update admin settings
 // @route   PUT /api/admin/settings
 const updateAdminSettings = async (req, res) => {
-  adminSettings = {
-    ...adminSettings,
-    ...req.body,
-  };
-
-  res.json({ success: true, settings: adminSettings });
+  try {
+    const settings = await saveAdminSettings(req.body || {});
+    res.json({ success: true, settings });
+  } catch (error) {
+    console.error('Update admin settings error:', error);
+    res.status(500).json({ message: 'Server error.' });
+  }
 };
 
 module.exports = {
