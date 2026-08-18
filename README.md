@@ -1,6 +1,6 @@
-# 🎓 EduConnect — Academic Social Network
+# 🎓 ShortJob — Academic Social Network
 
-**EduConnect** is a full-stack MERN application that connects students, teachers, and institutions. It features an Instagram-style feed, real-time chat, job board with applications, nested comments, notifications, and more.
+**ShortJob** is a full-stack MERN application that connects students, teachers, and institutions. It features an Instagram-style feed, real-time chat, job board with applications, nested comments, notifications, and more.
 
 ---
 
@@ -95,7 +95,7 @@
 ## 📁 Project Structure
 
 ```
-educonnect/
+ShortJob/
 ├── client/                     # React + Vite frontend
 │   ├── public/
 │   │   ├── manifest.json
@@ -138,8 +138,8 @@ educonnect/
 
 ### 1. Clone & Install
 ```bash
-git clone https://github.com/Ajay120503/EduConnect.git
-cd EduConnect
+git clone https://github.com/Ajay120503/ShortJob.git
+cd ShortJob
 cd client && npm install
 cd ../server && npm install
 cd ..
@@ -152,7 +152,7 @@ cp server/.env.example server/.env
 
 Edit `server/.env` with your credentials:
 ```env
-MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/EduConnect
+MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/ShortJob
 JWT_SECRET=your_jwt_secret
 JWT_REFRESH_SECRET=your_refresh_secret
 EMAIL_USER=your_email@gmail.com
@@ -287,4 +287,4 @@ Run the full test suite (70 API tests):
 
 ## 📄 License
 
-MIT © 2026 EduConnect
+MIT © 2026 ShortJob

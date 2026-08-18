@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# EduConnect - Start Script
+# ShortJob - Start Script
 # Checks for git updates, then starts both frontend and backend
 
 FRONTEND_PORT=5173
@@ -76,7 +76,7 @@ if [ ! -f "$PROJECT_DIR/server/.env" ]; then
 fi
 
 echo ""
-echo "🚀 Starting EduConnect..."
+echo "🚀 Starting ShortJob..."
 echo "   Backend:  http://localhost:$BACKEND_PORT"
 echo "   Frontend: http://localhost:$FRONTEND_PORT"
 echo ""
@@ -95,7 +95,7 @@ FRONTEND_PID=$!
 # Trap Ctrl+C to kill both processes
 trap "
   echo ''
-  echo '🛑 Shutting down EduConnect...'
+  echo '🛑 Shutting down ShortJob...'
   kill -9 $BACKEND_PID $FRONTEND_PID 2>/dev/null
   pkill -9 -f vite 2>/dev/null
   pkill -9 -f 'node server.js' 2>/dev/null

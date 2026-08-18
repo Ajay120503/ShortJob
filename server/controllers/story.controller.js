@@ -2,6 +2,8 @@ const Story = require('../models/Story');
 const { uploadToCloudinary, deleteFromCloudinary } = require('../middlewares/upload.middleware');
 const { getInitialModerationState } = require('../utils/adminSettings');
 
+const USER_SIGNAL_SELECT = 'name profilePic badges role category institutionName institutionPic openToOpportunities isAdmin isSuperAdmin lastActiveAt activeDays followers';
+
 // @desc    F13 — Create a story
 // @route   POST /api/stories
 const createStory = async (req, res) => {
@@ -20,7 +22,7 @@ const createStory = async (req, res) => {
     };
 
     if (req.file) {
-      const result = await uploadToCloudinary(req.file, 'educonnect/stories');
+      const result = await uploadToCloudinary(req.file, 'ShortJob/stories');
       storyData.image = {
         url: result.secure_url,
         publicId: result.public_id,
@@ -29,7 +31,7 @@ const createStory = async (req, res) => {
 
     const story = await Story.create(storyData);
     const populated = await Story.findById(story._id)
-      .populate('author', 'name profilePic institutionName openToOpportunities');
+      .populate('author', USER_SIGNAL_SELECT);
 
     res.status(201).json({ success: true, story: populated });
   } catch (error) {
@@ -52,7 +54,7 @@ const getStories = async (req, res) => {
       : { status: 'approved' };
 
     const stories = await Story.find(query)
-      .populate('author', 'name profilePic institutionName institutionPic openToOpportunities')
+      .populate('author', USER_SIGNAL_SELECT)
       .sort({ createdAt: -1 });
 
     // Group by author
