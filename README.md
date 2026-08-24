@@ -382,7 +382,3 @@ node server.js
 
 ## Notes
 
-- `start.sh` has been removed. Use the manual frontend/backend commands above.
-- Some legacy database field names and enum values remain for compatibility, but user-facing labels are generalized across the app.
-- The backend remains the source of truth for admin and super-admin permissions.
-- Cloudinary cleanup is important for storage hygiene; keep `publicId` values when adding new media features.
