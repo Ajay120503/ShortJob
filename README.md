@@ -1,290 +1,388 @@
-# 🎓 ShortJob — Academic Social Network
+# ShortJob
 
-**ShortJob** is a full-stack MERN application that connects students, teachers, and institutions. It features an Instagram-style feed, real-time chat, job board with applications, nested comments, notifications, and more.
+ShortJob is a full-stack MERN professional community platform for networking, posts, stories, job opportunities, applications, messaging, and admin moderation. It combines a social feed, opportunity board, real-time chat, PWA support, and a powerful admin dashboard.
 
----
-
-## 🚀 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
-| **Frontend** | React 19 + Vite + Tailwind CSS + DaisyUI 5 |
-| **Backend** | Node.js + Express.js |
-| **Database** | MongoDB (Mongoose ODM) |
-| **Real-time** | Socket.io (chat + notifications) |
-| **Auth** | JWT (access + refresh tokens) + httpOnly cookies |
-| **File Storage** | Cloudinary (images, PDFs) |
-| **Email** | Nodemailer (verification, password reset) |
-| **PWA** | vite-plugin-pwa (service worker, manifest) |
+| --- | --- |
+| Frontend | React 19, Vite, Tailwind CSS, DaisyUI 5 |
+| Backend | Node.js, Express.js |
+| Database | MongoDB, Mongoose |
+| Real Time | Socket.io |
+| Auth | JWT, httpOnly cookies, email OTP |
+| Media | Cloudinary |
+| Email | Nodemailer |
+| PWA | vite-plugin-pwa, Workbox |
 
----
+## Current Features
 
-## ✨ Features
+### Social Feed
 
-### 🏠 Feed (Instagram-style)
-- Infinite scroll post feed
-- Like/unlike, save/unsave, share (copy link)
-- Nested comments with replies (Instagram-style threading)
-- Like/unlike comments
-- Post types: General, Job Post, Announcement, Achievement
-- Image upload (multi-image) with Cloudinary
-- Tags support
-- Delete own posts
+- Public feed with approved posts.
+- Post types: general, job, announcement, achievement, and noticeboard.
+- Text posts, multi-image posts, tags, likes, saves, sharing, and delete/edit for owners.
+- Nested comments and replies with comment likes.
+- Linked job cards inside feed posts.
+- Author special color theme support on profile, posts, post detail, jobs, and job detail.
+- Saved posts page.
 
-### 💼 Job Board
-- Post jobs (teachers/institution members only)
-- Apply to jobs (students only)
-- Application status pipeline: Applied → Reviewed → Shortlisted → Rejected/Selected
-- Applicants dashboard for job posters
-- My Applications dashboard for students
-- Filters: Paid/Unpaid, Location, Role Type
-- Duplicate application prevention
+### Stories
 
-### 💬 Real-Time Chat
-- 1:1 direct messaging via Socket.io
-- Online/offline status indicators (green dot)
-- Typing indicators (animated dots)
-- Read receipts (✓ Sent / ✓✓ Read)
-- Message types: Text, Image, File
-- Conversation list with last message preview
-- Unread message badges
+- Users can create stories with text or image.
+- Stories are moderated before public visibility when moderation is enabled.
+- Story viewer modal with progress bars.
+- Story avatars do not show online/offline dots for cleaner UI.
+- Story media is deleted from Cloudinary during manual or scheduled cleanup.
 
-### 🔔 Notifications
-- Real-time push via Socket.io
-- Types: Post like, Comment, Reply, New follower, Job applied, Application status, New message
-- Mark all as read
-- Delete individual notifications
-- Unread indicator with animated pulse dot
-- Type-specific colored icons
+### Jobs & Opportunities
 
-### 👤 User Profiles
-- Public profile view with cover gradient
-- Profile picture upload (Cloudinary)
-- Institution logo upload (for teachers)
-- Resume PDF upload
-- Follow/unfollow system
-- Followers/Following counts
-- Edit profile with all fields:
-  - Name, Bio, Age, DOB, Profession
-  - Institution, Education Level, Subject, Experience
-  - Skills, Qualifications, Interests (comma-separated)
-  - City, State, Address
-  - LinkedIn URL
+- Any signed-in user can create jobs/opportunities.
+- Job image and organization logo support.
+- Required qualifications display cleanly.
+- Skills required are shown compactly in cards and sidebars.
+- Filters for paid/unpaid, location, and opportunity type.
+- Applications with status workflow.
+- Applicant dashboard and application kanban.
+- Matched jobs based on profile skills and qualifications.
+- Job Q&A, reach stats, quick apply, and applicant tracking.
 
-### 🔍 Explore / Search
-- Search users by name, role, skill, institution
-- Search results with skills badges
-- Click to view profile
+### Profiles
 
-### 📱 PWA Support
-- Installable on mobile/desktop
-- Service worker with Workbox
-- Offline fallback
-- manifest.json with icons
+- Public profiles with profile photo, organization logo, bio, links, skills, qualifications, interests, and location.
+- Career timeline entries for background, work, and achievements.
+- Current work details and previous work history.
+- Follow/unfollow system with followers/following modals.
+- Open to Opportunities setting.
+- Special user profile theme variants for eligible users.
+- Online/offline presence indicator across the platform, with privacy setting.
+- Avatar badges are scoped to profile and explore; other pages show clean avatars with only presence.
 
-### 🌐 Landing Page
-- Hero section with gradient text
-- How it Works (3 steps)
-- Features cards
-- Stats bar
-- CTA section
-- Footer
+### Explore
 
----
+- Search users by name, skill, organization, or profile content.
+- Followed users remain searchable.
+- Explore excludes already-followed users from discovery sections where appropriate.
+- Popular, active, open-to-work, and admin filters.
+- Admin/special users display with unique styling.
 
-## 📁 Project Structure
+### Chat
 
-```
+- One-to-one real-time conversations.
+- Duplicate conversation prevention.
+- Text, image, and file messages.
+- Typing indicators, read receipts, unread badges, and online status.
+- Custom confirmation modals for clearing/deleting chat.
+- Cloudinary cleanup for deleted chat files.
+
+### Notifications
+
+- Real-time notifications through Socket.io.
+- Likes, comments, replies, follows, job applications, application updates, messages, and moderation decisions.
+- Admin approval/rejection of posts, jobs, and stories notifies the creator.
+- Mark all as read and delete individual notifications.
+
+### Authentication & Security
+
+- Register, login, logout, refresh token, email verification, forgot password, and reset password.
+- Registration OTP flow.
+- Optional login audit setting controlled by admin:
+  - Requires location and photo capture at login.
+  - Stores audit records with photo, device, IP, and location.
+  - Records expire after 24 hours.
+  - Users can delete their own login records.
+  - Super admins can delete login records globally.
+- Blocked-screen UI matches the application shell while disabling actions.
+
+### Admin Dashboard
+
+- Admin dashboard with users, moderation queue, settings, login records, and content detail pages.
+- Manual moderation for posts, jobs, and stories.
+- Rule-based moderation with score, severity, decision, and transparent flags.
+- Auto moderation and manual review can run in parallel.
+- Auto-rejected content remains visible in the admin queue for manual override.
+- Admin settings for review queue, auto moderation, content types, rejection reason, login audit, and notifications.
+- Trust badge management.
+- Super admin permissions for platform-level actions.
+
+### Permissions
+
+- General users can use core platform features: posts, stories, jobs, applications, chat, profile, and explore.
+- Admins can review content, run rule checks, approve/reject content, inspect users, view login records, and update admin notes.
+- Super admins can:
+  - Promote users to admin.
+  - Remove admin access.
+  - Block/unblock users.
+  - Delete users.
+  - Grant/revoke trust badges.
+  - Update platform settings.
+  - Delete login records.
+- Top contributor and trust badges no longer grant admin permissions by themselves.
+
+### Moderation & Fake Detection
+
+- Rule-only detector for posts, jobs, and stories.
+- Detects scam patterns, unsafe topics, fee/deposit requests, off-platform contact funnels, short links, suspicious compensation, weak job details, repeated spam, low context, and expired deadlines.
+- Returns score, decision, severity, reason, and detailed flags.
+- Runs on content creation and through admin manual rule check.
+- Scheduled auto moderation processes pending content when the review window expires.
+
+### Media Cleanup
+
+- Cloudinary cleanup is handled for profile changes, post deletion, job deletion/update, stories, chat files, login records, and user deletion.
+- Keeps database and storage in sync.
+
+### UI & Branding
+
+- Warm professional teal/coral theme.
+- FontAwesome brand icon usage.
+- Updated PWA icons and favicon.
+- Mobile bottom bar uses the current user avatar for Profile.
+- Sidebar, bottom bar, admin UI, job cards, post cards, and blocked screen share the current app design language.
+
+## Project Structure
+
+```text
 ShortJob/
-├── client/                     # React + Vite frontend
+├── client/
 │   ├── public/
-│   │   ├── manifest.json
-│   │   └── icons/
+│   │   ├── favicon.svg
+│   │   ├── icon.svg
+│   │   ├── icons/
+│   │   └── manifest.webmanifest
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── common/         # Navbar, Sidebar, BottomNav, RightSidebar
-│   │   │   └── post/           # CreatePostModal
-│   │   ├── pages/              # 15 pages (Landing, Login, Feed, Chat, etc.)
-│   │   ├── store/              # Zustand auth store
-│   │   ├── context/            # Socket.io context
-│   │   ├── utils/              # Axios instance with interceptors
+│   │   │   ├── admin/
+│   │   │   ├── auth/
+│   │   │   ├── common/
+│   │   │   ├── job/
+│   │   │   ├── post/
+│   │   │   └── profile/
+│   │   ├── context/
+│   │   ├── pages/
+│   │   │   └── admin/
+│   │   ├── store/
+│   │   ├── utils/
 │   │   ├── App.jsx
 │   │   ├── main.jsx
-│   │   └── index.css           # DaisyUI custom theme
-│   ├── index.html
+│   │   └── index.css
+│   ├── package.json
 │   └── vite.config.js
-├── server/                     # Node.js + Express backend
-│   ├── config/                 # db.js, cloudinary.js, socket.js
-│   ├── models/                 # 8 Mongoose models
-│   ├── controllers/            # 7 controllers
-│   ├── routes/                 # 7 route files
-│   ├── middlewares/            # auth, role, upload
-│   ├── utils/                  # email (Nodemailer)
+├── server/
+│   ├── config/
+│   ├── controllers/
+│   ├── middlewares/
+│   ├── models/
+│   ├── routes/
+│   ├── utils/
+│   ├── package.json
 │   └── server.js
-├── start.sh                    # One-command startup script
 ├── .gitignore
 └── README.md
 ```
 
----
-
-## 🛠️ Installation & Setup
+## Setup
 
 ### Prerequisites
+
 - Node.js 18+
-- MongoDB (local or Atlas)
-- Cloudinary account (for image uploads)
-- Gmail account (for Nodemailer)
+- MongoDB or MongoDB Atlas
+- Cloudinary account
+- Email account or SMTP credentials for Nodemailer
 
-### 1. Clone & Install
+### Install Dependencies
+
 ```bash
-git clone https://github.com/Ajay120503/ShortJob.git
-cd ShortJob
-cd client && npm install
-cd ../server && npm install
-cd ..
+cd client
+npm install
+
+cd ../server
+npm install
 ```
 
-### 2. Configure Environment
-```bash
-cp server/.env.example server/.env
-```
+### Environment Variables
 
-Edit `server/.env` with your credentials:
+Create `server/.env`:
+
 ```env
-MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/ShortJob
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/<database>
 JWT_SECRET=your_jwt_secret
 JWT_REFRESH_SECRET=your_refresh_secret
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASSWORD=your_app_password
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+CLIENT_URL=http://localhost:5173
+
+EMAIL_USER=your_email@example.com
+EMAIL_PASSWORD=your_email_app_password
+
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud
+CLOUDINARY_API_KEY=your_cloudinary_key
+CLOUDINARY_API_SECRET=your_cloudinary_secret
+
+PORT=5000
+NODE_ENV=development
 ```
 
-### 3. Start
+### Run Locally
+
+Terminal 1:
+
 ```bash
-./start.sh
+cd server
+node server.js
 ```
 
-Or manually:
+Terminal 2:
+
 ```bash
-# Terminal 1 - Backend
-cd server && node server.js
-
-# Terminal 2 - Frontend
-cd client && npm run dev
+cd client
+npm run dev
 ```
 
-### 4. Open
-- **Frontend:** http://localhost:5173
-- **Backend API:** http://localhost:5000/api
+Default URLs:
 
----
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:5000/api`
 
-## 🔌 API Endpoints
+## Useful Commands
+
+```bash
+# Build frontend
+cd client
+npm run build
+
+# Preview frontend build
+cd client
+npm run preview
+
+# Run backend
+cd server
+node server.js
+```
+
+## API Overview
 
 ### Auth
+
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register new user |
+| --- | --- | --- |
+| POST | `/api/auth/register` | Start registration |
+| POST | `/api/auth/verify-registration-otp` | Verify registration OTP |
 | POST | `/api/auth/login` | Login |
+| POST | `/api/auth/login-audit` | Complete login audit when required |
 | POST | `/api/auth/logout` | Logout |
-| GET | `/api/auth/verify-email/:token` | Verify email |
-| POST | `/api/auth/forgot-password` | Send OTP |
+| GET | `/api/auth/me` | Current user |
+| POST | `/api/auth/forgot-password` | Send password reset OTP |
 | POST | `/api/auth/reset-password` | Reset password |
-| GET | `/api/auth/me` | Get current user |
-| POST | `/api/auth/refresh-token` | Refresh JWT |
+| POST | `/api/auth/refresh-token` | Refresh token |
 
 ### Users
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/users/:id` | Get profile |
-| PUT | `/api/users/:id` | Update profile (multipart) |
-| POST | `/api/users/:id/follow` | Follow/unfollow |
-| GET | `/api/users/search?q=` | Search users |
-| GET | `/api/users/:id/posts` | User's posts |
-| GET | `/api/users/:id/jobs` | User's jobs |
-| GET | `/api/users/:id/followers` | Get followers |
-| GET | `/api/users/:id/following` | Get following |
 
-### Posts
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/posts` | Feed (paginated) |
+| --- | --- | --- |
+| GET | `/api/users/search` | Search users |
+| GET | `/api/users/:id` | Get profile |
+| PUT | `/api/users/:id` | Update profile |
+| POST | `/api/users/:id/follow` | Follow/unfollow |
+| GET | `/api/users/:id/posts` | User posts |
+| GET | `/api/users/:id/jobs` | User jobs |
+| GET | `/api/users/:id/followers` | Followers |
+| GET | `/api/users/:id/following` | Following |
+| PATCH | `/api/users/me/opportunity-status` | Toggle open to opportunities |
+| POST | `/api/users/me/badges` | Update profile badges |
+| PUT | `/api/users/:id/timeline` | Update career timeline |
+| GET | `/api/users/online` | Online user IDs |
+| GET | `/api/users/me/login-history` | My login records |
+| DELETE | `/api/users/me/login-history/:id` | Delete my login record |
+
+### Posts & Comments
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/posts` | Feed |
 | POST | `/api/posts` | Create post |
-| GET | `/api/posts/:id` | Get single post |
+| GET | `/api/posts/:id` | Post detail |
+| PUT | `/api/posts/:id` | Update post |
 | DELETE | `/api/posts/:id` | Delete post |
 | POST | `/api/posts/:id/like` | Toggle like |
 | POST | `/api/posts/:id/save` | Toggle save |
 | GET | `/api/posts/saved` | Saved posts |
-
-### Comments
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/posts/:postId/comments` | Get comments |
+| GET | `/api/posts/:postId/comments` | Comments |
 | POST | `/api/posts/:postId/comments` | Add comment |
-| POST | `/api/comments/:id/reply` | Reply to comment |
-| POST | `/api/comments/:id/like` | Like comment |
+| POST | `/api/comments/:id/reply` | Reply |
+| POST | `/api/comments/:id/like` | Toggle comment like |
 | DELETE | `/api/comments/:id` | Delete comment |
 
 ### Jobs
+
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/jobs` | List jobs (filters) |
+| --- | --- | --- |
+| GET | `/api/jobs` | List jobs |
 | POST | `/api/jobs` | Create job |
-| GET | `/api/jobs/:id` | Get job |
+| GET | `/api/jobs/:id` | Job detail |
 | PUT | `/api/jobs/:id` | Update job |
 | DELETE | `/api/jobs/:id` | Delete job |
-| POST | `/api/jobs/:id/apply` | Apply to job |
-| GET | `/api/jobs/:id/applicants` | View applicants |
-| PUT | `/api/applications/:id/status` | Update status |
+| POST | `/api/jobs/:id/apply` | Apply |
+| GET | `/api/jobs/:id/applicants` | Applicants |
+| PUT | `/api/applications/:id/status` | Update application status |
 | GET | `/api/jobs/applications/my` | My applications |
+| GET | `/api/jobs/matched` | Matched jobs |
+
+### Stories
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/stories` | Get visible stories |
+| POST | `/api/stories` | Create story |
+| POST | `/api/stories/:id/view` | Mark story viewed |
+| DELETE | `/api/stories/:id` | Delete story |
 
 ### Chat
+
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/chat/conversations` | Get conversations |
-| POST | `/api/chat/conversations` | Create conversation |
-| GET | `/api/chat/conversations/:id/messages` | Get messages |
+| --- | --- | --- |
+| GET | `/api/chat/conversations` | Conversations |
+| POST | `/api/chat/conversations` | Create/get conversation |
+| DELETE | `/api/chat/conversations/:id` | Delete conversation |
+| DELETE | `/api/chat/conversations/:id/messages` | Clear conversation messages |
+| GET | `/api/chat/conversations/:id/messages` | Messages |
 | POST | `/api/chat/messages` | Send message |
-| PUT | `/api/chat/messages/:id/read` | Mark as read |
+| PUT | `/api/chat/messages/:id/read` | Mark read |
 
 ### Notifications
+
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/notifications` | Get notifications |
+| --- | --- | --- |
+| GET | `/api/notifications` | Notifications |
 | PUT | `/api/notifications/read-all` | Mark all read |
 | DELETE | `/api/notifications/:id` | Delete notification |
 
----
+### Admin
 
-## 🧪 Testing
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/admin/users` | List users |
+| GET | `/api/admin/users/:id` | User detail |
+| PUT | `/api/admin/users/:id/notes` | Update admin notes |
+| PUT | `/api/admin/users/:id/block` | Block user, super admin |
+| PUT | `/api/admin/users/:id/unblock` | Unblock user, super admin |
+| DELETE | `/api/admin/users/:id` | Delete user, super admin |
+| PUT | `/api/admin/users/:id/grant-badge` | Grant trust badge, super admin |
+| PUT | `/api/admin/users/:id/revoke-badge` | Revoke trust badge, super admin |
+| PUT | `/api/admin/users/:id/make-admin` | Promote admin, super admin |
+| PUT | `/api/admin/users/:id/remove-admin` | Remove admin, super admin |
+| GET | `/api/admin/settings` | Read settings |
+| PUT | `/api/admin/settings` | Update settings, super admin |
+| GET | `/api/admin/queue` | Moderation queue |
+| GET | `/api/admin/content/:type/:id` | Content detail |
+| PUT | `/api/admin/content/:type/:id/run-check` | Run rule check |
+| PUT | `/api/admin/content/:type/:id/approve` | Approve content |
+| PUT | `/api/admin/content/:type/:id/reject` | Reject content |
+| GET | `/api/admin/login-records` | Login audit records |
+| GET | `/api/admin/login-records/:id` | Login audit detail |
+| DELETE | `/api/admin/login-records/:id` | Delete login record, super admin |
 
-Run the full test suite (70 API tests):
-```bash
-./test_all_features.sh
-```
+## Notes
 
----
-
-## 📊 Test Results
-
-| Category | Tests | Passed |
-|----------|-------|--------|
-| Auth (register, login, validation) | 12 | 12 |
-| User (profile, follow, search) | 10 | 10 |
-| Posts (CRUD, like, save, feed) | 9 | 9 |
-| Comments (add, reply, like) | 6 | 6 |
-| Jobs (CRUD, apply, applicants, filters) | 13 | 13 |
-| Chat (conversations, messages, read) | 8 | 8 |
-| Notifications (get, mark read) | 3 | 3 |
-| Edge Cases (validation, auth guards) | 6 | 6 |
-| Cleanup (delete post, comment) | 3 | 3 |
-| **Total** | **70** | **70** |
-
----
-
-## 📄 License
-
-MIT © 2026 ShortJob
+- `start.sh` has been removed. Use the manual frontend/backend commands above.
+- Some legacy database field names and enum values remain for compatibility, but user-facing labels are generalized across the app.
+- The backend remains the source of truth for admin and super-admin permissions.
+- Cloudinary cleanup is important for storage hygiene; keep `publicId` values when adding new media features.
