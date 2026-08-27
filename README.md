@@ -22,7 +22,9 @@ ShortJob is a full-stack MERN professional community platform for networking, po
 - Public feed with approved posts.
 - Post types: general, job, announcement, achievement, and noticeboard.
 - Text posts, multi-image posts, tags, likes, saves, sharing, and delete/edit for owners.
+- Feed images preserve the full uploaded content with responsive contained previews and full-image open links.
 - Nested comments and replies with comment likes.
+- Dedicated post detail conversation layout with a split desktop view, mobile-friendly comment panel, multiline comment input, reply state, and clean empty/loading states.
 - Linked job cards inside feed posts.
 - Author special color theme support on profile, posts, post detail, jobs, and job detail.
 - Saved posts page.
@@ -43,7 +45,9 @@ ShortJob is a full-stack MERN professional community platform for networking, po
 - Skills required are shown compactly in cards and sidebars.
 - Filters for paid/unpaid, location, and opportunity type.
 - Applications with status workflow.
-- Applicant dashboard and application kanban.
+- Applicant dashboard and application kanban with drag-and-drop status updates.
+- Applicant records can be exported as formatted Excel and PDF reports by the job poster.
+- Improved applicant profile cards with contact, skill, location, timeline, and application context.
 - Matched jobs based on profile skills and qualifications.
 - Job Q&A, reach stats, quick apply, and applicant tracking.
 
@@ -80,7 +84,8 @@ ShortJob is a full-stack MERN professional community platform for networking, po
 - Real-time notifications through Socket.io.
 - Likes, comments, replies, follows, job applications, application updates, messages, and moderation decisions.
 - Admin approval/rejection of posts, jobs, and stories notifies the creator.
-- Mark all as read and delete individual notifications.
+- Mark all as read, delete individual notifications, and clear all notifications at once.
+- Clearing all notifications first marks unread notifications as read before deleting them.
 
 ### Authentication & Security
 
@@ -88,10 +93,14 @@ ShortJob is a full-stack MERN professional community platform for networking, po
 - Registration OTP flow.
 - Optional login audit setting controlled by admin:
   - Requires location and photo capture at login.
+  - Requires a complete visible face capture before login can continue.
+  - Uses native browser face detection when available, with a stricter canvas fallback for browsers without native support.
+  - Rejects missing, cropped, unclear, or poorly lit face captures.
   - Stores audit records with photo, device, IP, and location.
   - Records expire after 24 hours.
   - Users can delete their own login records.
   - Super admins can delete login records globally.
+  - Login audit Cloudinary photos are removed when audit records are deleted.
 - Blocked-screen UI matches the application shell while disabling actions.
 
 ### Admin Dashboard
@@ -138,7 +147,9 @@ ShortJob is a full-stack MERN professional community platform for networking, po
 - FontAwesome brand icon usage.
 - Updated PWA icons and favicon.
 - Mobile bottom bar uses the current user avatar for Profile.
-- Sidebar, bottom bar, admin UI, job cards, post cards, and blocked screen share the current app design language.
+- Sidebar, bottom bar, admin UI, right sidebar, explore, jobs, saved posts, profile, job cards, post cards, comments, and blocked screen share the current app design language.
+- Responsive layouts use fuller mobile width with tighter side spacing and larger-screen split panels where useful.
+- Landing page uses updated visual sections and subtle scroll animations.
 
 ## Project Structure
 
@@ -354,6 +365,7 @@ node server.js
 | GET | `/api/notifications` | Notifications |
 | PUT | `/api/notifications/read-all` | Mark all read |
 | DELETE | `/api/notifications/:id` | Delete notification |
+| DELETE | `/api/notifications/clear-all` | Mark unread notifications read, then delete all |
 
 ### Admin
 
@@ -381,4 +393,3 @@ node server.js
 | DELETE | `/api/admin/login-records/:id` | Delete login record, super admin |
 
 ## Notes
-
