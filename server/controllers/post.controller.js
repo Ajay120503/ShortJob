@@ -5,6 +5,7 @@ const { getIO } = require('../config/socket');
 const { uploadToCloudinary, deleteFromCloudinary } = require('../middlewares/upload.middleware');
 const { runFakeDetectionRuleOnly } = require('../utils/fakeDetectionRuleOnly');
 const { getInitialModerationState, applyInitialRuleModeration } = require('../utils/adminSettings');
+const { pickPriorityPage, toId } = require('../utils/contentOrdering');
 
 const USER_SIGNAL_SELECT = 'name profilePic badges role category institutionName institutionPic openToOpportunities isAdmin isSuperAdmin lastActiveAt activeDays followers profileThemeVariant';
 
@@ -56,11 +57,22 @@ const getFeed = async (req, res) => {
       };
     }
 
-    const posts = await Post.find(query)
+    const orderedPostPage = req.user
+      ? await Post.find(query)
+          .select('_id author createdAt')
+          .lean()
+          .then((rows) => pickPriorityPage(rows, req.user, (post) => post.author, skip, limit))
+      : null;
+
+    const postsQuery = req.user
+      ? Post.find({ _id: { $in: orderedPostPage.map((post) => post._id) } })
+      : Post.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit);
+
+    const posts = await postsQuery
       .populate('author', USER_SIGNAL_SELECT)
       .populate({
         path: 'jobPost',
-        select: 'title institutionName institutionLogo roleType isPaid stipend currency location deadline description image skillsRequired applicants postedBy',
+        select: 'title institutionName institutionLogo roleType isPaid stipend currency location workplaceName workplaceAddress workplaceCity workplaceState workplaceCountry coordinates deadline description image skillsRequired applicants postedBy',
         populate: {
           path: 'postedBy',
           select: USER_SIGNAL_SELECT,
@@ -73,11 +85,12 @@ const getFeed = async (req, res) => {
           path: 'author',
           select: USER_SIGNAL_SELECT,
         },
-      })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+      });
 
+    if (req.user) {
+      const order = new Map(orderedPostPage.map((post, index) => [toId(post._id), index]));
+      posts.sort((a, b) => (order.get(toId(a._id)) ?? 0) - (order.get(toId(b._id)) ?? 0));
+    }
     const total = await Post.countDocuments(query);
 
     res.json({
@@ -237,7 +250,7 @@ const updatePost = async (req, res) => {
       .populate('author', USER_SIGNAL_SELECT)
       .populate({
         path: 'jobPost',
-        select: 'title institutionName institutionLogo roleType isPaid stipend currency location deadline description image skillsRequired applicants postedBy',
+        select: 'title institutionName institutionLogo roleType isPaid stipend currency location workplaceName workplaceAddress workplaceCity workplaceState workplaceCountry coordinates deadline description image skillsRequired applicants postedBy',
         populate: {
           path: 'postedBy',
           select: USER_SIGNAL_SELECT,
@@ -395,7 +408,7 @@ const getSavedPosts = async (req, res) => {
       .populate('author', USER_SIGNAL_SELECT)
       .populate({
         path: 'jobPost',
-        select: 'title institutionName institutionLogo roleType isPaid stipend currency location deadline description image skillsRequired applicants postedBy',
+        select: 'title institutionName institutionLogo roleType isPaid stipend currency location workplaceName workplaceAddress workplaceCity workplaceState workplaceCountry coordinates deadline description image skillsRequired applicants postedBy',
         populate: {
           path: 'postedBy',
           select: USER_SIGNAL_SELECT,
@@ -426,7 +439,7 @@ const getPost = async (req, res) => {
       .populate('author', USER_SIGNAL_SELECT)
       .populate({
         path: 'jobPost',
-        select: 'title institutionName institutionLogo roleType isPaid stipend currency location deadline description image skillsRequired applicants postedBy',
+        select: 'title institutionName institutionLogo roleType isPaid stipend currency location workplaceName workplaceAddress workplaceCity workplaceState workplaceCountry coordinates deadline description image skillsRequired applicants postedBy',
         populate: {
           path: 'postedBy',
           select: USER_SIGNAL_SELECT,

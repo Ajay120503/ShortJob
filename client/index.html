@@ -19,10 +19,42 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Lora:wght@500;600;700&family=Nunito:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Condensed:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <title>ShortJob — Academic Social Network</title>
+    <script>
+      (function () {
+        var mode = localStorage.getItem("shortjob-theme-mode") || "system";
+        var dark =
+          mode === "dark" ||
+          (mode === "system" &&
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.setAttribute(
+          "data-theme",
+          dark ? "ShortJobDark" : "ShortJob"
+        );
+        var fontMode = localStorage.getItem("shortjob-font-mode") || "modern";
+        var fontModes = [
+          "modern",
+          "professional",
+          "rounded",
+          "editorial",
+          "compact",
+          "system",
+        ];
+        document.documentElement.setAttribute(
+          "data-font",
+          fontModes.indexOf(fontMode) >= 0 ? fontMode : "modern"
+        );
+        document.documentElement.style.colorScheme = dark ? "dark" : "light";
+        var themeMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeMeta) {
+          themeMeta.setAttribute("content", dark ? "#071615" : "#147f83");
+        }
+      })();
+    </script>
     <!-- Open Graph / Social Meta -->
     <meta property="og:title" content="ShortJob — Academic Social Network"/>
     <meta property="og:description" content="Connect jon seeker with job creaters and institutions. Find academic roles, post jobs, and build your academic network."/>

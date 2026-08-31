@@ -10,6 +10,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
 import useAuthStore from "./store/authStore";
 import { SocketProvider } from "./context/SocketContext";
+import {
+  APP_THEME_CHANGE_EVENT,
+  applyAppTheme,
+  getStoredThemeMode,
+} from "./utils/theme";
+import {
+  APP_FONT_CHANGE_EVENT,
+  applyAppFont,
+  getStoredFontMode,
+} from "./utils/font";
 
 // Layout Components
 import Sidebar from "./components/common/Sidebar";
@@ -63,6 +73,44 @@ function App() {
 
   const toggleSidebar = useCallback(() => {
     setSidebarCollapsed((prev) => !prev);
+  }, []);
+
+  useEffect(() => {
+    const syncTheme = () => applyAppTheme(getStoredThemeMode());
+    const syncFont = () => applyAppFont(getStoredFontMode());
+    syncTheme();
+    syncFont();
+    const mediaQuery = window.matchMedia?.("(prefers-color-scheme: dark)");
+    window.addEventListener(APP_THEME_CHANGE_EVENT, syncTheme);
+    window.addEventListener(APP_FONT_CHANGE_EVENT, syncFont);
+    window.addEventListener("storage", syncTheme);
+    window.addEventListener("storage", syncFont);
+    if (!mediaQuery) {
+      return () => {
+        window.removeEventListener(APP_THEME_CHANGE_EVENT, syncTheme);
+        window.removeEventListener(APP_FONT_CHANGE_EVENT, syncFont);
+        window.removeEventListener("storage", syncTheme);
+        window.removeEventListener("storage", syncFont);
+      };
+    }
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", syncTheme);
+      return () => {
+        mediaQuery.removeEventListener("change", syncTheme);
+        window.removeEventListener(APP_THEME_CHANGE_EVENT, syncTheme);
+        window.removeEventListener(APP_FONT_CHANGE_EVENT, syncFont);
+        window.removeEventListener("storage", syncTheme);
+        window.removeEventListener("storage", syncFont);
+      };
+    }
+    mediaQuery.addListener?.(syncTheme);
+    return () => {
+      mediaQuery.removeListener?.(syncTheme);
+      window.removeEventListener(APP_THEME_CHANGE_EVENT, syncTheme);
+      window.removeEventListener(APP_FONT_CHANGE_EVENT, syncFont);
+      window.removeEventListener("storage", syncTheme);
+      window.removeEventListener("storage", syncFont);
+    };
   }, []);
 
   useEffect(() => {
@@ -185,7 +233,7 @@ function App() {
                         collapsed={sidebarCollapsed}
                         onToggle={toggleSidebar}
                       />
-                      <main className="app-main flex-1 overflow-y-auto pb-[70px] md:pb-0 scroll-smooth">
+                      <main className="app-main flex-1 overflow-y-auto scroll-smooth">
                         <Routes>
                           <Route path="/feed" element={<Feed />} />
                           <Route

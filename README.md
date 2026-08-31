@@ -41,6 +41,7 @@ ShortJob is a full-stack MERN professional community platform for networking, po
 
 - Any signed-in user can create jobs/opportunities.
 - Job image and organization logo support.
+- Workplace name, address, city/state/country, coordinates, map preview, and map links for job posts.
 - Required qualifications display cleanly.
 - Skills required are shown compactly in cards and sidebars.
 - Filters for paid/unpaid, location, and opportunity type.
@@ -143,7 +144,7 @@ ShortJob is a full-stack MERN professional community platform for networking, po
 
 ### UI & Branding
 
-- Warm professional teal/coral theme.
+- Warm professional teal/coral light theme with matching dark mode and system theme support.
 - FontAwesome brand icon usage.
 - Updated PWA icons and favicon.
 - Mobile bottom bar uses the current user avatar for Profile.

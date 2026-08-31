@@ -13,6 +13,8 @@ import {
   canUseSpecialStyle,
   getSpecialUserStyle,
 } from "../../utils/specialUserStyles";
+import { getJobWorkModeLabel, getJobWorkplaceLabel } from "../../utils/jobLocation";
+import { normalizeJobSkills } from "../../utils/jobSkills";
 
 const LinkedJobCard = ({ job }) => {
   if (!job) return null;
@@ -21,6 +23,7 @@ const LinkedJobCard = ({ job }) => {
   const StipendIcon = job.currency === "USD" ? DollarSign : IndianRupee;
   const isSpecialJob = canUseSpecialStyle(job.postedBy);
   const specialStyle = getSpecialUserStyle(job.postedBy);
+  const skillsRequired = normalizeJobSkills(job.skillsRequired);
 
   const formatStipend = () => {
     if (!job.isPaid || !job.stipend) return "Unpaid";
@@ -42,7 +45,7 @@ const LinkedJobCard = ({ job }) => {
       <div
         className={`card border transition-colors overflow-hidden ${
           isSpecialJob
-            ? "bg-base-100/70 border-base-content/10 hover:border-base-content/20"
+            ? `${specialStyle.shell} ${specialStyle.shellHover}`
             : "bg-base-200/70 border-base-300 hover:border-primary/50"
         }`}
       >
@@ -107,7 +110,12 @@ const LinkedJobCard = ({ job }) => {
             </span>
             <span className="flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5" />
-              <span className="capitalize">{job.location}</span>
+              <span className="line-clamp-1">
+                {getJobWorkplaceLabel(job)}
+              </span>
+              <span className="text-base-content/35">
+                ({getJobWorkModeLabel(job.location)})
+              </span>
             </span>
             <span className="flex items-center gap-1">
               <StipendIcon className="w-3.5 h-3.5" />
@@ -126,9 +134,9 @@ const LinkedJobCard = ({ job }) => {
           </div>
 
           {/* Skills */}
-          {job.skillsRequired?.length > 0 && (
+          {skillsRequired.length > 0 && (
             <div className="flex gap-1.5 flex-wrap mt-3">
-              {job.skillsRequired.slice(0, 4).map((skill, i) => (
+              {skillsRequired.slice(0, 4).map((skill, i) => (
                 <span
                   key={i}
                   className={`badge badge-sm text-[11px] line-clamp-1 font-medium ${isSpecialJob ? specialStyle.soft : "badge-ghost"}`}
@@ -136,11 +144,11 @@ const LinkedJobCard = ({ job }) => {
                   {skill}
                 </span>
               ))}
-              {job.skillsRequired.length > 4 && (
+              {skillsRequired.length > 4 && (
                 <span
                   className={`badge badge-sm text-[11px] line-clamp-1 font-medium ${isSpecialJob ? specialStyle.soft : "badge-ghost"}`}
                 >
-                  +{job.skillsRequired.length - 4} more
+                  +{skillsRequired.length - 4} more
                 </span>
               )}
             </div>

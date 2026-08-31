@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   Eye,
   Pencil,
+  ExternalLink,
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import API from "../utils/axios";
@@ -24,6 +25,13 @@ import {
   canUseSpecialStyle,
   getSpecialUserStyle,
 } from "../utils/specialUserStyles";
+import {
+  getJobMapEmbedUrl,
+  getJobMapLink,
+  getJobWorkModeLabel,
+  getJobWorkplaceLabel,
+} from "../utils/jobLocation";
+import { normalizeJobSkills } from "../utils/jobSkills";
 
 const formatStipend = (stipend, currency, isPaid) => {
   if (!isPaid) return "Unpaid";
@@ -122,6 +130,8 @@ const JobDetail = () => {
 
   const isSpecialJob = canUseSpecialStyle(job.postedBy);
   const specialStyle = getSpecialUserStyle(job.postedBy);
+  const mapEmbedUrl = getJobMapEmbedUrl(job);
+  const skillsRequired = normalizeJobSkills(job.skillsRequired);
 
   return (
     <div className="max-w-2xl mx-auto p-4 md:p-6">
@@ -136,9 +146,7 @@ const JobDetail = () => {
 
       <div
         className={`card shadow-sm border p-6 ${
-          isSpecialJob
-            ? specialStyle.shell
-            : "bg-base-100 border-base-300/50"
+          isSpecialJob ? specialStyle.shell : "bg-base-100 border-base-300/50"
         }`}
       >
         {/* Job Image */}
@@ -159,10 +167,14 @@ const JobDetail = () => {
               isSpecialJob ? specialStyle.soft : "bg-primary/10"
             }`}
           >
-            <Briefcase className={`w-7 h-7 ${isSpecialJob ? specialStyle.icon : "text-primary"}`} />
+            <Briefcase
+              className={`w-7 h-7 ${isSpecialJob ? specialStyle.icon : "text-primary"}`}
+            />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className={`text-2xl font-bold font-heading mb-1 ${isSpecialJob ? specialStyle.muted : ""}`}>
+            <h1
+              className={`text-2xl font-bold font-heading mb-1 ${isSpecialJob ? specialStyle.muted : ""}`}
+            >
               {job.title}
             </h1>
             <div
@@ -182,13 +194,9 @@ const JobDetail = () => {
           <div className="bg-base-200/50 rounded-xl p-3 text-center">
             <MapPin className="w-4 h-4 text-primary mx-auto mb-1" />
             <p className="text-xs font-medium capitalize">
-              {job.location === "remote"
-                ? "Remote"
-                : job.location === "hybrid"
-                  ? "Hybrid"
-                  : "On-site"}
+              {getJobWorkModeLabel(job.location)}
             </p>
-            <p className="text-[10px] text-base-content/40">Location</p>
+            <p className="text-[10px] text-base-content/40">Work mode</p>
           </div>
           <div className="bg-base-200/50 rounded-xl p-3 text-center">
             <p
@@ -219,6 +227,43 @@ const JobDetail = () => {
           </div>
         </div>
 
+        {/* Workplace Location */}
+        <div className="mb-5 rounded-2xl border border-base-300/60 bg-base-200/35 p-4">
+          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h3 className="font-semibold text-sm flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-primary" />
+                Workplace
+              </h3>
+              <p className="mt-1 text-sm text-base-content/70 leading-relaxed">
+                {getJobWorkplaceLabel(job)}
+              </p>
+            </div>
+            <a
+              href={getJobMapLink(job)}
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-ghost btn-xs gap-1.5 self-start"
+            >
+              Open map
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+          {mapEmbedUrl ? (
+            <iframe
+              title="Workplace map"
+              src={mapEmbedUrl}
+              className="h-56 w-full rounded-xl border border-base-300 bg-base-100"
+              loading="lazy"
+            />
+          ) : (
+            <div className="rounded-xl border border-dashed border-base-300 bg-base-100 p-4 text-xs text-base-content/45">
+              Exact map coordinates were not added. Use the map link to search
+              this workplace address.
+            </div>
+          )}
+        </div>
+
         {/* Opportunity Type Badge */}
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <span className="badge badge-sm badge-primary badge-soft capitalize">
@@ -243,11 +288,11 @@ const JobDetail = () => {
         </div>
 
         {/* Skills */}
-        {job.skillsRequired?.length > 0 && (
+        {skillsRequired.length > 0 && (
           <div className="mb-5">
             <h3 className="font-semibold text-sm mb-2">Skills Required</h3>
             <div className="flex gap-1.5 flex-wrap">
-              {job.skillsRequired.map((s, i) => (
+              {skillsRequired.map((s, i) => (
                 <span
                   key={i}
                   className="badge badge-sm line-clamp-1 badge-ghost text-xs"
@@ -284,17 +329,17 @@ const JobDetail = () => {
 
         {/* Owner actions */}
         {isJobPoster && (
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 flex justify-end gap-2 items-center w-full">
             <Link
               to={`/jobs/${job._id}/edit`}
-              className="btn btn-ghost w-full gap-2 border border-base-300"
+              className="btn btn-primary gap-2"
             >
               <Pencil className="w-4 h-4" />
               Edit Job
             </Link>
             <Link
               to={`/jobs/${job._id}/applicants`}
-              className="btn btn-primary w-full gap-2"
+              className="btn btn-primary gap-2"
             >
               <Users className="w-4 h-4" />
               View Applicants ({job.applicants?.length || 0})

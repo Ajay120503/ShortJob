@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   UserPlus,
@@ -21,6 +21,8 @@ import {
   sortDiscoverableUsers,
 } from "../../utils/userSignals";
 import { getSpecialUserStyle } from "../../utils/specialUserStyles";
+import { getJobWorkplaceLabel } from "../../utils/jobLocation";
+import { normalizeJobSkills } from "../../utils/jobSkills";
 
 const visibleSkillsLimit = 2;
 
@@ -30,8 +32,9 @@ const RightSidebar = () => {
   const [recentJobs, setRecentJobs] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingJobs, setLoadingJobs] = useState(true);
-  const following = new Set(
-    (user?.following || []).map(getUserId).filter(Boolean),
+  const following = useMemo(
+    () => new Set((user?.following || []).map(getUserId).filter(Boolean)),
+    [user?.following],
   );
 
   useEffect(() => {
@@ -69,7 +72,7 @@ const RightSidebar = () => {
 
     fetchSuggestedUsers();
     fetchRecentJobs();
-  }, [user?._id, user?.following]);
+  }, [following, user?._id]);
 
   return (
     <aside className="hidden lg:flex flex-col w-[360px] xl:w-[380px] bg-base-100 border-l border-base-200/80 sticky top-0 h-screen overflow-hidden">
@@ -296,8 +299,8 @@ const RightSidebar = () => {
                           <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
                             <span className="flex min-w-0 items-center gap-1 text-[10px] text-base-content/40">
                               <MapPin className="w-3 h-3 shrink-0" />
-                              <span className="truncate capitalize">
-                                {job.location}
+                              <span className="truncate">
+                                {getJobWorkplaceLabel(job)}
                               </span>
                             </span>
                             <span
@@ -316,9 +319,9 @@ const RightSidebar = () => {
                               </span>
                             </span>
                           </div>
-                          {job.skillsRequired?.length > 0 && (
+                          {normalizeJobSkills(job.skillsRequired).length > 0 && (
                             <div className="mt-2 flex max-w-full items-center gap-1 overflow-hidden">
-                              {job.skillsRequired
+                              {normalizeJobSkills(job.skillsRequired)
                                 .slice(0, visibleSkillsLimit)
                                 .map((skill, i) => (
                                   <span
@@ -329,11 +332,11 @@ const RightSidebar = () => {
                                     {skill}
                                   </span>
                                 ))}
-                              {job.skillsRequired.length >
+                              {normalizeJobSkills(job.skillsRequired).length >
                                 visibleSkillsLimit && (
                                 <span className="shrink-0 rounded-full bg-base-300/70 px-1.5 py-0.5 text-[9px] font-medium text-base-content/40">
                                   +
-                                  {job.skillsRequired.length -
+                                  {normalizeJobSkills(job.skillsRequired).length -
                                     visibleSkillsLimit}
                                 </span>
                               )}
@@ -374,10 +377,10 @@ const RightSidebar = () => {
       {/* Footer */}
       <div className="p-4 border-t border-base-200/80 flex-shrink-0">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="w-5 h-5 bg-primary/10 rounded flex items-center justify-center">
+          <div className="w-5 h-5 bg-primary rounded flex items-center justify-center">
             <FontAwesomeIcon
               icon={faUserGraduate}
-              className="w-3 h-3 text-primary"
+              className="w-3 h-3 text-white"
             />
           </div>
           <span className="text-xs font-semibold text-base-content/40">

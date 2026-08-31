@@ -3,9 +3,11 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   BadgeCheck,
-  Bell,
   Briefcase,
+  CalendarClock,
   CheckCircle2,
+  FileCheck2,
+  MapPin,
   MessageCircle,
   ShieldCheck,
   Users,
@@ -13,6 +15,7 @@ import {
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserGraduate } from "@fortawesome/free-solid-svg-icons";
+import ThemeToggle from "../components/common/ThemeToggle";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 22 },
@@ -56,16 +59,35 @@ const featureCards = [
 ];
 
 const flowSteps = [
-  "Build a profile",
-  "Post or discover",
-  "Apply and chat",
-  "Grow with signals",
+  {
+    title: "Build a profile",
+    detail: "Add your program, skills, and what you're looking for.",
+  },
+  {
+    title: "Post or discover",
+    detail: "Share updates, or scan the feed for relevant opportunities.",
+  },
+  {
+    title: "Apply and chat",
+    detail: "Apply in a click, then message directly to sort out details.",
+  },
+  {
+    title: "Grow with signals",
+    detail: "Track responses, follows, and match strength over time.",
+  },
 ];
 
 const stats = [
-  { value: "24h", label: "login audit retention" },
-  { value: "3", label: "content queues" },
+  { value: "24h", label: "audit retention" },
+  { value: "3", label: "review queues" },
   { value: "Live", label: "chat and alerts" },
+];
+
+const trustItems = [
+  "Public posts and stories",
+  "Job matching",
+  "Applicant kanban",
+  "Admin review",
 ];
 
 const Landing = () => {
@@ -73,15 +95,19 @@ const Landing = () => {
     <div className="min-h-screen bg-base-100 text-base-content overflow-x-hidden">
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-base-300/70 bg-base-100/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-          <Link to="/" className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-content shadow-sm">
-              <FontAwesomeIcon icon={faUserGraduate} className="h-5 w-5" />
+          <Link to="/" className="flex items-center gap-2">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shadow-sm">
+              <FontAwesomeIcon
+                icon={faUserGraduate}
+                className="h-5 w-5 text-white"
+              />
             </span>
             <span className="font-heading text-lg font-bold text-primary">
               ShortJob
             </span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <ThemeToggle compact />
             <Link to="/login" className="btn btn-ghost btn-sm">
               Sign In
             </Link>
@@ -94,9 +120,9 @@ const Landing = () => {
       </nav>
 
       <main>
-        <section className="relative isolate overflow-hidden px-4 pb-16 pt-28 sm:px-6 lg:pb-24 lg:pt-36">
-          <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,#fbfefd_0%,#edf7f6_70%,#fbfefd_100%)]" />
-          <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[0.92fr_1.08fr]">
+        <section className="relative isolate overflow-hidden px-4 pb-20 pt-32 sm:px-6 lg:pb-28 lg:pt-40">
+          <div className="absolute inset-0 -z-10 bg-base-100" />
+          <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.95fr_1.05fr]">
             <motion.div
               initial="hidden"
               animate="show"
@@ -105,42 +131,48 @@ const Landing = () => {
             >
               <motion.div
                 variants={fadeUp}
-                className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"
+                className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-primary"
               >
-                Professional community, jobs, chat, and moderation
+                Professional network, jobs, chat & review
               </motion.div>
 
               <motion.h1
                 variants={fadeUp}
-                className="font-heading text-4xl font-extrabold leading-tight text-neutral sm:text-5xl lg:text-6xl"
+                className="font-heading text-4xl font-extrabold leading-[1.06] tracking-tight text-base-content sm:text-5xl lg:text-6xl"
               >
-                Where careers begin and trusted networks grow.
+                A smarter way to build your network and manage work.
               </motion.h1>
 
               <motion.p
                 variants={fadeUp}
-                className="mt-5 max-w-xl text-base leading-7 text-base-content/65 sm:text-lg"
+                className="mt-6 max-w-xl text-base leading-7 text-base-content/65 sm:text-lg"
               >
-                ShortJob brings posts, stories, opportunities, applications,
-                realtime chat, and admin review into one focused platform.
+                ShortJob brings public posts, stories, jobs, applications,
+                realtime chat, and trusted review into one modern workspace.
               </motion.p>
 
               <motion.div
                 variants={fadeUp}
-                className="mt-8 flex flex-col gap-3 sm:flex-row"
+                className="mt-9 flex flex-col gap-3 sm:flex-row"
               >
-                <Link to="/register" className="btn btn-primary btn-lg gap-2">
+                <Link
+                  to="/register"
+                  className="btn btn-primary btn-lg gap-2 shadow-lg shadow-primary/20"
+                >
                   Create Account
                   <ArrowRight className="h-5 w-5" />
                 </Link>
-                <Link to="/login" className="btn btn-outline btn-lg gap-2">
+                <Link
+                  to="/login"
+                  className="btn btn-outline btn-lg gap-2 bg-base-100"
+                >
                   Sign In
                 </Link>
               </motion.div>
 
               <motion.div
                 variants={fadeUp}
-                className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-base-content/55"
+                className="mt-9 flex flex-wrap gap-x-6 gap-y-2 text-sm text-base-content/55"
               >
                 {[
                   "Free to start",
@@ -153,135 +185,197 @@ const Landing = () => {
                   </span>
                 ))}
               </motion.div>
+
+              <motion.div
+                variants={fadeUp}
+                className="mt-8 flex flex-wrap gap-2"
+              >
+                {trustItems.map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-full border border-base-300 bg-base-200/70 px-3 py-1 text-xs font-semibold text-base-content/55"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </motion.div>
             </motion.div>
 
+            {/* Signature hero visual: a fanned stack of real product moments,
+               instead of a generic browser-chrome dashboard mockup */}
             <motion.div
-              initial={{ opacity: 0, y: 28, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.7, ease: "easeOut", delay: 0.08 }}
-              className="relative"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.75, ease: "easeOut", delay: 0.1 }}
+              className="group relative mx-auto w-full max-w-md space-y-3 sm:h-[470px] sm:max-w-lg sm:space-y-0 lg:mx-0 lg:ml-auto lg:h-[520px] lg:max-w-xl"
             >
-              <div className="rounded-lg border border-base-300 bg-base-100 p-3 shadow-xl shadow-primary/10">
-                <div className="rounded-lg border border-base-300 bg-base-200/55 p-3">
-                  <div className="mb-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full bg-error" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-warning" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-success" />
-                    </div>
-                    <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary">
-                      Live workspace
-                    </span>
+              <div className="absolute inset-x-8 bottom-2 top-0 hidden rounded-[2rem] border border-base-300 bg-base-200/70 shadow-2xl shadow-primary/10 transition-all duration-500 ease-out sm:block lg:inset-x-10 lg:bottom-4 lg:top-2 lg:group-hover:inset-x-2 lg:group-hover:bottom-0 lg:group-hover:top-0" />
+              <div className="relative rounded-2xl border border-base-300 bg-base-100 p-3 shadow-xl transition-all duration-500 ease-out sm:absolute sm:inset-x-14 sm:bottom-9 sm:top-8 sm:rounded-[1.5rem] sm:p-4 lg:inset-x-16 lg:bottom-14 lg:top-12 lg:group-hover:inset-x-8 lg:group-hover:bottom-16 lg:group-hover:top-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+                      Today
+                    </p>
+                    <p className="font-heading text-lg font-bold">
+                      Opportunity Feed
+                    </p>
                   </div>
-
-                  <div className="grid gap-3 md:grid-cols-[1fr_0.78fr]">
-                    <div className="space-y-3">
-                      <motion.div
-                        animate={{ y: [0, -4, 0] }}
-                        transition={{ duration: 4, repeat: Infinity }}
-                        className="rounded-lg border border-primary/20 bg-base-100 p-4"
-                      >
-                        <div className="mb-3 flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-primary/15" />
-                          <div className="min-w-0 flex-1">
-                            <div className="h-3 w-28 rounded bg-neutral/15" />
-                            <div className="mt-2 h-2 w-20 rounded bg-primary/20" />
-                          </div>
-                          <BadgeCheck className="h-5 w-5 text-success" />
+                  <span className="badge badge-primary badge-soft">12 new</span>
+                </div>
+                <div className="space-y-3">
+                  {[
+                    ["Senior Coordinator", "Pune · Hybrid", "92%"],
+                    ["Content Associate", "Remote", "86%"],
+                    ["Operations Lead", "Mumbai", "78%"],
+                  ].map(([title, place, match]) => (
+                    <div
+                      key={title}
+                      className="rounded-xl border border-base-300/70 bg-base-200/45 p-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold">{title}</p>
+                          <p className="mt-1 flex items-center gap-1 text-xs text-base-content/45">
+                            <MapPin className="h-3 w-3" />
+                            {place}
+                          </p>
                         </div>
-                        <div className="space-y-2">
-                          <div className="h-3 rounded bg-base-300" />
-                          <div className="h-3 w-4/5 rounded bg-base-300" />
-                        </div>
-                        <div className="mt-4 grid grid-cols-3 gap-2">
-                          <span className="h-16 rounded bg-primary/10" />
-                          <span className="h-16 rounded bg-accent/10" />
-                          <span className="h-16 rounded bg-success/10" />
-                        </div>
-                      </motion.div>
-
-                      <div className="rounded-lg border border-base-300 bg-base-100 p-4">
-                        <div className="mb-3 flex items-center justify-between">
-                          <span className="text-sm font-bold">
-                            Opportunity match
-                          </span>
-                          <span className="badge badge-success badge-soft badge-sm">
-                            86%
-                          </span>
-                        </div>
-                        <div className="h-2 overflow-hidden rounded-full bg-base-300">
-                          <motion.div
-                            initial={{ width: "18%" }}
-                            animate={{ width: "86%" }}
-                            transition={{ duration: 1.2, delay: 0.4 }}
-                            className="h-full rounded-full bg-success"
-                          />
-                        </div>
+                        <span className="rounded-full bg-success/10 px-2 py-0.5 text-xs font-bold text-success">
+                          {match}
+                        </span>
                       </div>
                     </div>
-
-                    <div className="space-y-3">
-                      <motion.div
-                        animate={{ y: [0, 5, 0] }}
-                        transition={{ duration: 4.5, repeat: Infinity }}
-                        className="rounded-lg border border-accent/20 bg-base-100 p-4"
-                      >
-                        <div className="mb-3 flex items-center gap-2">
-                          <Briefcase className="h-4 w-4 text-accent" />
-                          <span className="text-sm font-bold">Jobs</span>
-                        </div>
-                        {[
-                          "Product Trainer",
-                          "Support Lead",
-                          "Content Creator",
-                        ].map((role) => (
-                          <div
-                            key={role}
-                            className="mb-2 rounded border border-base-300 bg-base-200/60 px-3 py-2 text-xs font-medium"
-                          >
-                            {role}
-                          </div>
-                        ))}
-                      </motion.div>
-
-                      <div className="rounded-lg border border-info/20 bg-base-100 p-4">
-                        <div className="mb-3 flex items-center gap-2">
-                          <Bell className="h-4 w-4 text-info" />
-                          <span className="text-sm font-bold">Moderation</span>
-                        </div>
-                        <div className="space-y-2 text-xs">
-                          <div className="flex items-center justify-between rounded bg-success/10 px-3 py-2 text-success">
-                            <span>Approved</span>
-                            <span>42</span>
-                          </div>
-                          <div className="flex items-center justify-between rounded bg-warning/10 px-3 py-2 text-warning">
-                            <span>Review</span>
-                            <span>8</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
+
+              <motion.div
+                animate={{ y: [0, -6, 0] }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="relative rounded-xl border border-info/20 bg-base-100 p-3 shadow-lg transition-all duration-500 ease-out sm:absolute sm:left-0 sm:top-8 sm:w-[70%] sm:-rotate-3 sm:p-4 lg:-left-4 lg:top-4 lg:w-[66%] lg:group-hover:-left-16 lg:group-hover:-top-2 lg:group-hover:-rotate-6"
+              >
+                <div className="mb-3 flex items-center gap-2 text-info">
+                  <MessageCircle className="h-4 w-4" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wide">
+                    Chat
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  <div className="ml-auto w-3/4 rounded-lg rounded-tr-sm bg-info/15 px-3 py-2 text-xs">
+                    Are you free for a quick call about the role?
+                  </div>
+                  <div className="w-2/3 rounded-lg rounded-tl-sm bg-base-200 px-3 py-2 text-xs">
+                    Yes — 4pm works for me.
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                animate={{ y: [0, 7, 0] }}
+                transition={{
+                  duration: 5.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.3,
+                }}
+                className="relative rounded-xl border border-accent/20 bg-base-100 p-3 shadow-lg transition-all duration-500 ease-out sm:absolute sm:right-0 sm:top-40 sm:w-[74%] sm:rotate-2 sm:p-4 lg:-right-2 lg:top-44 lg:w-[70%] lg:group-hover:-right-16 lg:group-hover:top-36 lg:group-hover:rotate-6"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-accent">
+                    <Briefcase className="h-4 w-4" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wide">
+                      Opportunity
+                    </span>
+                  </div>
+                  <span className="badge badge-success badge-soft badge-sm">
+                    86% match
+                  </span>
+                </div>
+                <p className="text-sm font-bold">Campus Content Lead</p>
+                <p className="mt-1 text-xs text-base-content/55">
+                  Student Affairs Office · Part-time
+                </p>
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-base-300">
+                  <motion.div
+                    initial={{ width: "12%" }}
+                    animate={{ width: "86%" }}
+                    transition={{ duration: 1.2, delay: 0.5 }}
+                    className="h-full rounded-full bg-success"
+                  />
+                </div>
+              </motion.div>
+
+              <motion.div
+                animate={{ y: [0, -5, 0] }}
+                transition={{
+                  duration: 4.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.6,
+                }}
+                className="relative rounded-xl border border-primary/20 bg-base-100 p-3 shadow-lg transition-all duration-500 ease-out sm:absolute sm:left-5 sm:top-[21rem] sm:w-[76%] sm:-rotate-1 sm:p-4 sm:shadow-xl lg:left-3 lg:top-[23rem] lg:w-[72%] lg:group-hover:-left-10 lg:group-hover:top-[24rem] lg:group-hover:-rotate-5"
+              >
+                <div className="mb-3 flex items-center gap-3">
+                  <div className="h-10 w-10 shrink-0 rounded-full bg-primary/15" />
+                  <div className="min-w-0 flex-1">
+                    <div className="h-3 w-24 rounded bg-neutral/15" />
+                    <div className="mt-1.5 h-2 w-16 rounded bg-primary/20" />
+                  </div>
+                  <BadgeCheck className="h-5 w-5 shrink-0 text-success" />
+                </div>
+                <span className="inline-flex items-center gap-1.5 text-xs text-base-content/55">
+                  <Users className="h-3.5 w-3.5" />
+                  248 connections · 12 mutual
+                </span>
+              </motion.div>
+
+              <motion.div
+                animate={{ y: [0, 5, 0] }}
+                transition={{
+                  duration: 5.2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.2,
+                }}
+                className="relative rounded-xl border border-success/20 bg-base-100 p-3 shadow-lg transition-all duration-500 ease-out sm:absolute sm:right-4 sm:bottom-5 sm:w-[62%] lg:-right-2 lg:bottom-8 lg:group-hover:-right-14 lg:group-hover:bottom-1"
+              >
+                <div className="flex items-center gap-2 text-success">
+                  <FileCheck2 className="h-4 w-4" />
+                  <span className="text-xs font-bold">
+                    Application reviewed
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center gap-2 text-xs text-base-content/50">
+                  <CalendarClock className="h-3.5 w-3.5" />
+                  Interview slot shared in chat
+                </div>
+              </motion.div>
             </motion.div>
           </div>
         </section>
 
-        <section className="border-y border-base-300 bg-primary px-4 py-8 text-primary-content sm:px-6">
+        <section className="border-y border-base-300 bg-primary px-4 py-9 text-primary-content sm:px-6">
           <motion.div
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.4 }}
             variants={stagger}
-            className="mx-auto grid max-w-5xl gap-6 text-center sm:grid-cols-3"
+            className="mx-auto grid max-w-4xl divide-y divide-white/15 text-center text-white sm:grid-cols-3 sm:divide-x sm:divide-y-0"
           >
             {stats.map((stat) => (
-              <motion.div key={stat.label} variants={fadeUp}>
+              <motion.div
+                key={stat.label}
+                variants={fadeUp}
+                className="px-6 py-3 sm:py-0"
+              >
                 <div className="font-heading text-3xl font-extrabold">
                   {stat.value}
                 </div>
-                <div className="mt-1 text-sm font-medium text-primary-content/70">
+                <div className="mt-1 text-sm font-medium text-white/80">
                   {stat.label}
                 </div>
               </motion.div>
@@ -300,14 +394,14 @@ const Landing = () => {
             >
               <motion.div
                 variants={fadeUp}
-                className="mb-3 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold text-accent"
+                className="mb-3 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-accent"
               >
                 <Zap className="h-3.5 w-3.5" />
                 One connected flow
               </motion.div>
               <motion.h2
                 variants={fadeUp}
-                className="font-heading text-3xl font-bold sm:text-4xl"
+                className="font-heading text-3xl font-bold tracking-tight sm:text-4xl"
               >
                 From profile to opportunity without friction.
               </motion.h2>
@@ -318,29 +412,28 @@ const Landing = () => {
               whileInView="show"
               viewport={{ once: true, amount: 0.25 }}
               variants={stagger}
-              className="grid gap-3 md:grid-cols-4"
+              className="relative"
             >
-              {flowSteps.map((step, index) => (
-                <motion.div
-                  key={step}
-                  variants={fadeUp}
-                  className="rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm"
-                >
-                  <div className="mb-4 flex h-9 w-9 items-center justify-center rounded bg-primary/10 text-sm font-bold text-primary">
-                    {index + 1}
-                  </div>
-                  <h3 className="font-heading text-base font-bold">{step}</h3>
-                  <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-base-300">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${(index + 1) * 25}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.7, delay: index * 0.08 }}
-                      className="h-full rounded-full bg-primary"
-                    />
-                  </div>
-                </motion.div>
-              ))}
+              <div className="absolute left-0 right-0 top-[1.15rem] hidden h-px bg-base-300 md:block" />
+              <div className="grid gap-3 md:grid-cols-4">
+                {flowSteps.map((step, index) => (
+                  <motion.div
+                    key={step.title}
+                    variants={fadeUp}
+                    className="relative rounded-lg border border-transparent p-3 transition-colors hover:border-base-300 hover:bg-base-200/45"
+                  >
+                    <div className="relative z-10 mb-4 flex h-9 w-9 items-center justify-center rounded-full border-2 border-primary bg-base-100 text-sm font-bold text-primary">
+                      {index + 1}
+                    </div>
+                    <h3 className="font-heading text-base font-bold">
+                      {step.title}
+                    </h3>
+                    <p className="mt-1.5 text-sm leading-6 text-base-content/55">
+                      {step.detail}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
             </motion.div>
           </div>
         </section>
@@ -356,7 +449,7 @@ const Landing = () => {
             >
               <motion.h2
                 variants={fadeUp}
-                className="font-heading text-3xl font-bold sm:text-4xl"
+                className="font-heading text-3xl font-bold tracking-tight sm:text-4xl"
               >
                 Built for active communities.
               </motion.h2>
@@ -379,8 +472,11 @@ const Landing = () => {
                   <motion.div
                     key={feature.title}
                     variants={fadeUp}
-                    className="rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-md"
+                    className="group relative overflow-hidden rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-md"
                   >
+                    <span
+                      className={`absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100 ${feature.tone.split(" ")[0].replace("text-", "bg-")}`}
+                    />
                     <div
                       className={`mb-4 flex h-11 w-11 items-center justify-center rounded border ${feature.tone}`}
                     >
@@ -405,28 +501,27 @@ const Landing = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.35 }}
             transition={{ duration: 0.55 }}
-            className="mx-auto max-w-4xl rounded-lg border border-primary/20 bg-primary p-8 text-center text-primary-content shadow-xl shadow-primary/15 sm:p-12"
+            className="landing-cta-panel mx-auto max-w-4xl rounded-xl border border-primary/25 p-8 text-center shadow-xl shadow-primary/15 sm:p-12"
           >
-            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-white/12"></div>
-            <h2 className="font-heading text-3xl font-bold sm:text-4xl">
+            <div className="landing-cta-mark mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-lg">
+              <FontAwesomeIcon
+                icon={faUserGraduate}
+                className="h-6 w-6 text-white"
+              />
+            </div>
+            <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
               Start building your network today.
             </h2>
-            <p className="mx-auto mt-3 max-w-xl text-primary-content/75">
+            <p className="landing-cta-copy mx-auto mt-3 max-w-xl">
               Create your profile, share your work, discover opportunities, and
               manage everything from one focused place.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link
-                to="/register"
-                className="btn border-0 bg-white text-primary hover:bg-white/90"
-              >
+              <Link to="/register" className="btn landing-cta-primary border-0">
                 Get Started Free
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link
-                to="/login"
-                className="btn btn-ghost text-white hover:bg-white/10"
-              >
+              <Link to="/login" className="btn btn-ghost landing-cta-secondary">
                 Sign In
               </Link>
             </div>
@@ -437,8 +532,11 @@ const Landing = () => {
       <footer className="border-t border-base-300 px-4 py-8 sm:px-6">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-sm text-base-content/45 sm:flex-row">
           <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded bg-primary text-primary-content">
-              <FontAwesomeIcon icon={faUserGraduate} className="h-4 w-4" />
+            <span className="flex h-8 w-8 items-center justify-center rounded bg-primary text-white">
+              <FontAwesomeIcon
+                icon={faUserGraduate}
+                className="h-4 w-4 text-white"
+              />
             </span>
             <span className="font-heading font-bold text-base-content">
               ShortJob

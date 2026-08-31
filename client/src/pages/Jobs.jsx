@@ -9,6 +9,7 @@ import QuickApplyBtn from "../components/job/QuickApplyBtn";
 import UserSignalBadge from "../components/common/UserSignalBadge";
 import { getUserSignal } from "../utils/userSignals";
 import { getSpecialUserStyle } from "../utils/specialUserStyles";
+import { getJobWorkModeLabel, getJobWorkplaceLabel } from "../utils/jobLocation";
 
 const formatStipend = (stipend, currency, isPaid) => {
   if (!isPaid) return "Unpaid";
@@ -38,6 +39,9 @@ const hasAppliedToJob = (job, userId) =>
         return applicantId === userId;
       })
   );
+
+const getUserId = (value) => (typeof value === "string" ? value : value?._id);
+const isOwnJob = (job, userId) => Boolean(userId && getUserId(job?.postedBy) === userId);
 
 const Jobs = () => {
   const { user } = useAuthStore();
@@ -76,7 +80,9 @@ const Jobs = () => {
     );
   }
 
-  const filtered = jobs
+  const visibleJobs = jobs.filter((job) => !isOwnJob(job, user?._id));
+
+  const filtered = visibleJobs
     .filter((j) => (filter === "all" ? true : j.isPaid === (filter === "paid")))
     .filter((j) => {
       const term = searchTerm.trim().toLowerCase();
@@ -85,6 +91,10 @@ const Jobs = () => {
         j.title,
         j.institutionName,
         j.location,
+        j.workplaceName,
+        j.workplaceAddress,
+        j.workplaceCity,
+        j.workplaceState,
         j.roleType,
         j.description,
         ...(j.skillsRequired || []),
@@ -163,9 +173,9 @@ const Jobs = () => {
           <SlidersHorizontal className="h-3.5 w-3.5" />
           <span>{filtered.length} showing</span>
           <span className="h-1 w-1 rounded-full bg-base-content/25" />
-          <span>{jobs.filter((j) => j.isPaid).length} paid</span>
+          <span>{visibleJobs.filter((j) => j.isPaid).length} paid</span>
           <span className="h-1 w-1 rounded-full bg-base-content/25" />
-          <span>{jobs.reduce((sum, job) => sum + (job.applicants?.length || 0), 0)} total applicants</span>
+          <span>{visibleJobs.reduce((sum, job) => sum + (job.applicants?.length || 0), 0)} total applicants</span>
         </div>
       </div>
 
@@ -239,11 +249,12 @@ const Jobs = () => {
                             className={`flex items-center gap-1 ${isSpecialJob ? "text-base-content/60" : "text-base-content/50"}`}
                           >
                             <MapPin className="w-3.5 h-3.5" />
-                            {job.location === "remote"
-                              ? "Remote"
-                              : job.location === "hybrid"
-                                ? "Hybrid"
-                                : "On-site"}
+                            <span className="line-clamp-1">
+                              {getJobWorkplaceLabel(job)}
+                            </span>
+                            <span className="text-base-content/35">
+                              ({getJobWorkModeLabel(job.location)})
+                            </span>
                           </span>
                           <span
                             className={`flex items-center gap-1 font-medium ${
