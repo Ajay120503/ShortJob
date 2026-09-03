@@ -12,7 +12,7 @@ import {
 import useAuthStore from "../../store/authStore";
 import API from "../../utils/axios";
 import { getUserRoleLabel, isAdminUser } from "../../utils/badgeUtils";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import UserRow from "../../components/admin/UserRow";
 import UserAvatar from "../../components/common/UserAvatar";
 
@@ -237,7 +237,7 @@ const AdminUsers = () => {
               <thead>
                 <tr>
                   <th>User</th>
-                  <th>Role</th>
+                  <th>User Type</th>
                   <th>Badges</th>
                   <th>Status</th>
                   <th>Joined</th>

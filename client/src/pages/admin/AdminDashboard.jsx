@@ -17,7 +17,7 @@ import {
   UserCheck,
   Users,
 } from "lucide-react";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import useAuthStore from "../../store/authStore";
 import API from "../../utils/axios";
 import { getUserRoleLabel, isAdminUser, isSuperAdminUser } from "../../utils/badgeUtils";
@@ -444,7 +444,7 @@ const AdminDashboard = () => {
                   <thead>
                     <tr>
                       <th>User</th>
-                      <th>Role</th>
+                      <th>User Type</th>
                       <th>Status</th>
                       <th>Joined</th>
                     </tr>
@@ -573,7 +573,7 @@ const AdminDashboard = () => {
               <thead>
                 <tr>
                   <th>User</th>
-                  <th>Role</th>
+                  <th>User Type</th>
                   <th>Badges</th>
                   <th>Status</th>
                   <th>Joined</th>

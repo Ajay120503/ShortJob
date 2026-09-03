@@ -11,10 +11,11 @@ import {
   Eye,
   Pencil,
   ExternalLink,
+  Clock,
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import API from "../utils/axios";
-import toast from "react-hot-toast";
+import toast from "../utils/toast";
 import SkillGapBar from "../components/job/SkillGapBar";
 // import QuickApplyBtn from "../components/job/QuickApplyBtn";
 import ReachStats from "../components/job/ReachStats";
@@ -32,6 +33,7 @@ import {
   getJobWorkplaceLabel,
 } from "../utils/jobLocation";
 import { normalizeJobSkills } from "../utils/jobSkills";
+import { getJobScheduleLabel } from "../utils/jobSchedule";
 
 const formatStipend = (stipend, currency, isPaid) => {
   if (!isPaid) return "Unpaid";
@@ -190,7 +192,7 @@ const JobDetail = () => {
         </div>
 
         {/* Key Details Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div className="grid grid-cols-2 gap-3 mb-5 md:grid-cols-3 xl:grid-cols-6">
           <div className="bg-base-200/50 rounded-xl p-3 text-center">
             <MapPin className="w-4 h-4 text-primary mx-auto mb-1" />
             <p className="text-xs font-medium capitalize">
@@ -219,6 +221,18 @@ const JobDetail = () => {
               })}
             </p>
             <p className="text-[10px] text-base-content/40">Deadline</p>
+          </div>
+          <div className="bg-base-200/50 rounded-xl p-3 text-center">
+            <Clock className="w-4 h-4 text-primary mx-auto mb-1" />
+            <p className="text-xs font-medium">{getJobScheduleLabel(job) || "Not specified"}</p>
+            <p className="text-[10px] text-base-content/40">Working time</p>
+          </div>
+          <div className="bg-base-200/50 rounded-xl p-3 text-center">
+            <Briefcase className="w-4 h-4 text-primary mx-auto mb-1" />
+            <p className="text-xs font-medium">
+              {job.duration?.value ? `${job.duration.value} ${job.duration.unit}` : "Not specified"}
+            </p>
+            <p className="text-[10px] text-base-content/40">Duration</p>
           </div>
           <div className="bg-base-200/50 rounded-xl p-3 text-center">
             <Eye className="w-4 h-4 text-secondary mx-auto mb-1" />

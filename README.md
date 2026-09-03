@@ -394,3 +394,16 @@ node server.js
 | DELETE | `/api/admin/login-records/:id` | Delete login record, super admin |
 
 ## Notes
+# Redis / Render Key Value
+
+The API uses Redis as an optional cache-aside layer for feeds, jobs, stories,
+comments, profiles, and searches. MongoDB remains the source of truth and the
+server continues normally when Redis is unavailable.
+
+For local development, set `REDIS_URL=redis://localhost:6379` in `server/.env`.
+For Render, create a Key Value instance in the same region as the web service
+and add its **internal URL** as the web service's `REDIS_URL` environment
+variable. `/api/health` reports whether Redis is configured and connected.
+
+Successful content mutations invalidate cached reads immediately. Cached
+responses include `X-Cache: HIT`; uncached responses include `X-Cache: MISS`.
