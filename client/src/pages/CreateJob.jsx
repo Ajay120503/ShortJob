@@ -19,6 +19,7 @@ import API from "../utils/axios";
 import toast from "../utils/toast";
 import useAuthStore from "../store/authStore";
 import JobTimeField from "../components/job/JobTimeField";
+import { calculateDurationHours, calculateEndTime } from "../utils/jobSchedule";
 import {
   getJobMapEmbedUrl,
   getJobMapLink,
@@ -54,6 +55,7 @@ const CreateJob = () => {
     shortJobType: "one_day_gig",
     durationValue: "",
     durationUnit: "hours",
+    jobDate: "",
     startTime: "",
     endTime: "",
     isPaid: false,
@@ -80,10 +82,18 @@ const CreateJob = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    setForm((prev) => {
+      const next = { ...prev, [name]: type === "checkbox" ? checked : value };
+      if ((name === "startTime" || name === "endTime") && next.startTime && next.endTime) {
+        next.durationUnit = "hours";
+        next.durationValue = calculateDurationHours(next.startTime, next.endTime);
+      } else if (name === "startTime" && next.durationUnit === "hours" && next.durationValue) {
+        next.endTime = calculateEndTime(next.startTime, next.durationValue);
+      } else if ((name === "durationValue" || name === "durationUnit") && next.durationUnit === "hours" && next.startTime) {
+        next.endTime = calculateEndTime(next.startTime, next.durationValue);
+      }
+      return next;
+    });
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
@@ -118,7 +128,8 @@ const CreateJob = () => {
     if (form.title.trim().length > 120) nextErrors.title = "Job title is too long.";
     if (!form.description.trim()) nextErrors.description = "Description is required.";
     if (!form.shortJobType) nextErrors.shortJobType = "Short job type is required.";
-    if (!Number.isInteger(Number(form.durationValue)) || Number(form.durationValue) < 1) nextErrors.durationValue = "Enter a positive whole number.";
+    if (!Number.isFinite(Number(form.durationValue)) || Number(form.durationValue) <= 0) nextErrors.durationValue = "Enter a positive duration.";
+    if (!form.jobDate) nextErrors.jobDate = "Job date is required.";
     if (!form.startTime) nextErrors.startTime = "Start time is required.";
     if (!form.endTime) nextErrors.endTime = "End time is required.";
     if (form.startTime && form.endTime && form.startTime === form.endTime) {
@@ -131,6 +142,7 @@ const CreateJob = () => {
     if (form.deadline && form.deadline < todayInputValue) {
       nextErrors.deadline = "Deadline cannot be in the past.";
     }
+    if (form.jobDate && form.deadline && form.deadline > form.jobDate) nextErrors.deadline = "Deadline cannot be after the job date.";
     if (!form.contactEmail.trim()) nextErrors.contactEmail = "Contact email is required.";
     if (form.contactEmail && !isValidEmail(form.contactEmail)) {
       nextErrors.contactEmail = "Enter a valid email address.";
@@ -201,6 +213,7 @@ const CreateJob = () => {
     formData.append("shortJobType", form.shortJobType);
     formData.append("durationValue", form.durationValue);
     formData.append("durationUnit", form.durationUnit);
+    formData.append("jobDate", form.jobDate);
     formData.append("startTime", form.startTime);
     formData.append("endTime", form.endTime);
     formData.append("isPaid", form.isPaid);
@@ -264,7 +277,7 @@ const CreateJob = () => {
   if (Number(user.age) < 18) return <ProfileGate message="You must be 18 or older to post a job on ShorJob." allowEdit={false} />;
 
   return (
-    <div className="max-w-2xl mx-auto p-4 md:p-6">
+    <div className="max-w-3xl mx-auto p-4 md:p-6">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <button
@@ -342,7 +355,9 @@ const CreateJob = () => {
                 onChange={handleChange}
                 required
               />
-              {errors.description && <FieldError>{errors.description}</FieldError>}
+              {errors.description && (
+                <FieldError>{errors.description}</FieldError>
+              )}
             </div>
 
             {/* Short Job Type */}
@@ -365,17 +380,44 @@ const CreateJob = () => {
                   </option>
                 ))}
               </select>
-              {errors.shortJobType && <FieldError>{errors.shortJobType}</FieldError>}
+              {errors.shortJobType && (
+                <FieldError>{errors.shortJobType}</FieldError>
+              )}
             </div>
             <div className="grid grid-cols-[1fr_auto] gap-3">
               <div className="form-control">
-                <label className="label pb-1"><span className="label-text text-sm font-medium">Duration *</span></label>
-                <input name="durationValue" type="number" min="1" step="1" value={form.durationValue} onChange={handleChange} className={`input input-bordered ${errors.durationValue ? 'input-error' : ''}`} placeholder="4" />
-                {errors.durationValue && <FieldError>{errors.durationValue}</FieldError>}
+                <label className="label pb-1">
+                  <span className="label-text text-sm font-medium">
+                    Duration *
+                  </span>
+                </label>
+                <input
+                  name="durationValue"
+                  type="number"
+                  min="0.25"
+                  step="0.25"
+                  value={form.durationValue}
+                  onChange={handleChange}
+                  className={`input input-bordered ${errors.durationValue ? "input-error" : ""}`}
+                  placeholder="4"
+                />
+                {errors.durationValue && (
+                  <FieldError>{errors.durationValue}</FieldError>
+                )}
               </div>
               <div className="form-control">
-                <label className="label pb-1"><span className="label-text text-sm font-medium">Unit</span></label>
-                <select name="durationUnit" value={form.durationUnit} onChange={handleChange} className="select select-bordered"><option value="hours">Hours</option><option value="days">Days</option></select>
+                <label className="label pb-1">
+                  <span className="label-text text-sm font-medium">Unit</span>
+                </label>
+                <select
+                  name="durationUnit"
+                  value={form.durationUnit}
+                  onChange={handleChange}
+                  className="select select-bordered"
+                >
+                  <option value="hours">Hours</option>
+                  <option value="days">Days</option>
+                </select>
               </div>
             </div>
             <div className="rounded-xl border border-base-300/60 bg-base-200/35 p-3">
@@ -383,10 +425,32 @@ const CreateJob = () => {
                 <Clock className="h-4 w-4 text-primary" /> Daily working time
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <JobTimeField name="startTime" label="Start time" value={form.startTime} onChange={handleChange} error={errors.startTime} />
-                <JobTimeField name="endTime" label="End time" value={form.endTime} onChange={handleChange} error={errors.endTime} />
+                <div className="form-control sm:col-span-2">
+                  <label className="label pb-1"><span className="label-text text-xs font-semibold">Job date *</span></label>
+                  <div className="relative">
+                    <Calendar className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
+                    <input name="jobDate" type="date" min={todayInputValue} value={form.jobDate} onChange={handleChange} className={`input input-bordered h-12 w-full rounded-xl pl-10 ${errors.jobDate ? "input-error" : ""}`} required />
+                  </div>
+                  {errors.jobDate && <FieldError>{errors.jobDate}</FieldError>}
+                </div>
+                <JobTimeField
+                  name="startTime"
+                  label="Start time"
+                  value={form.startTime}
+                  onChange={handleChange}
+                  error={errors.startTime}
+                />
+                <JobTimeField
+                  name="endTime"
+                  label="End time"
+                  value={form.endTime}
+                  onChange={handleChange}
+                  error={errors.endTime}
+                />
               </div>
-              <p className="mt-2 text-[11px] text-base-content/45">Times are displayed to applicants in 12-hour AM/PM format.</p>
+              <p className="mt-2 text-[11px] text-base-content/45">
+                Times are displayed to applicants in 12-hour AM/PM format.
+              </p>
             </div>
           </div>
         </div>
@@ -429,7 +493,8 @@ const CreateJob = () => {
                     Workplace Location
                   </h3>
                   <p className="text-xs text-base-content/45 mt-1">
-                    Add the exact work place so applicants can check distance and directions.
+                    Add the exact work place so applicants can check distance
+                    and directions.
                   </p>
                 </div>
                 <button
@@ -504,9 +569,13 @@ const CreateJob = () => {
                   />
                 </div>
               </div>
-              {(errors.coordinates || errors.coordinateLat || errors.coordinateLng) && (
+              {(errors.coordinates ||
+                errors.coordinateLat ||
+                errors.coordinateLng) && (
                 <FieldError>
-                  {errors.coordinates || errors.coordinateLat || errors.coordinateLng}
+                  {errors.coordinates ||
+                    errors.coordinateLat ||
+                    errors.coordinateLng}
                 </FieldError>
               )}
               <div className="mt-3 overflow-hidden rounded-xl border border-base-300 bg-base-100">
@@ -662,7 +731,9 @@ const CreateJob = () => {
                 onChange={handleChange}
                 required
               />
-              {errors.contactEmail && <FieldError>{errors.contactEmail}</FieldError>}
+              {errors.contactEmail && (
+                <FieldError>{errors.contactEmail}</FieldError>
+              )}
             </div>
 
             {/* Max Applicants */}
@@ -681,7 +752,9 @@ const CreateJob = () => {
                 onChange={handleChange}
                 min="0"
               />
-              {errors.maxApplicants && <FieldError>{errors.maxApplicants}</FieldError>}
+              {errors.maxApplicants && (
+                <FieldError>{errors.maxApplicants}</FieldError>
+              )}
             </div>
           </div>
         </div>
