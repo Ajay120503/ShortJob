@@ -77,7 +77,8 @@ ShortJob is a full-stack MERN professional community platform for networking, po
 
 ### Global Search
 
-- A single icon opens a global search surface for users, jobs, posts, and application pages.
+- A single icon opens a global search surface for users, jobs, posts, the user's conversations, creation actions, settings subsections, and application pages.
+- Application destinations are role-aware: admin tools are only suggested to admins, while platform settings and login-audit records are only suggested to super admins.
 - Results are grouped by type and use database IDs for exact profile, job, and post routes.
 - Multi-word and partial matching, debounced requests, stale-request cancellation, loading states, and empty states.
 - Full-screen mobile search with safe-area support, locked background scrolling, Escape/backdrop closing, and a document-level portal that avoids stacking-context clipping.
