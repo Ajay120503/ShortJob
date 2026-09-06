@@ -3,8 +3,8 @@ import { useState } from "react";
 import {
   Menu,
   X,
-  Search,
   User,
+  Compass,
   Briefcase,
   Bookmark,
   Bell,
@@ -17,6 +17,7 @@ import useAuthStore from "../../store/authStore";
 import { useSocket } from "../../context/SocketContext";
 import UserAvatar from "./UserAvatar";
 import Brand from "./Brand";
+import GlobalSearch from "./GlobalSearch";
 import { isAdminUser } from "../../utils/badgeUtils";
 
 const MobileHeader = () => {
@@ -33,7 +34,7 @@ const MobileHeader = () => {
 
   return (
     <>
-      <header className="lg:hidden sticky top-0 z-40 bg-base-100/95 backdrop-blur-xl border-b border-base-300/80 shadow-sm safe-area-top">
+      <header className="z-app-navigation sticky top-0 bg-base-100/95 backdrop-blur-xl border-b border-base-300/80 shadow-sm lg:hidden safe-area-top">
         <div className="flex min-h-14 items-center justify-between px-3 py-2 sm:px-5">
           {/* Logo */}
           <Link to="/feed" className="flex items-center gap-2 shrink-0">
@@ -43,13 +44,7 @@ const MobileHeader = () => {
           {/* Right side: search + menu */}
           <div className="flex items-center gap-1">
             {/* Search button */}
-            <button
-              onClick={() => handleNavigate("/explore")}
-              className="btn btn-ghost btn-circle btn-sm"
-              aria-label="Search"
-            >
-              <Search className="w-5 h-5" />
-            </button>
+            <GlobalSearch />
 
             {/* Notifications quick access */}
             <button
@@ -59,7 +54,7 @@ const MobileHeader = () => {
             >
               <Bell className="w-5 h-5" />
               {notificationCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-error text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                <span className="count-badge count-badge-notification absolute -right-0.5 -top-0.5">
                   {notificationCount > 9 ? "9+" : notificationCount}
                 </span>
               )}
@@ -107,6 +102,14 @@ const MobileHeader = () => {
               </button>
 
               <button
+                onClick={() => handleNavigate("/explore")}
+                className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-base-200"
+              >
+                <Compass className="w-5 h-5 text-primary" />
+                <span className="text-sm font-medium">Explore People</span>
+              </button>
+
+              <button
                 onClick={() => handleNavigate("/jobs")}
                 className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-base-200"
               >
@@ -129,7 +132,7 @@ const MobileHeader = () => {
                 <MessageCircle className="w-5 h-5 text-primary" />
                 <span className="text-sm font-medium">Chat</span>
                 {messageCount > 0 && (
-                  <span className="ml-auto bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                  <span className="count-badge count-badge-message count-badge-inline ml-auto">
                     {messageCount > 9 ? "9+" : messageCount}
                   </span>
                 )}
@@ -173,7 +176,7 @@ const MobileHeader = () => {
       {/* Overlay when menu is open */}
       {menuOpen && (
         <div
-            className="lg:hidden fixed inset-0 bg-neutral/35 backdrop-blur-[1px] z-30"
+            className="z-app-menu-backdrop fixed inset-0 bg-neutral/35 backdrop-blur-[1px] lg:hidden"
           onClick={() => setMenuOpen(false)}
         />
       )}

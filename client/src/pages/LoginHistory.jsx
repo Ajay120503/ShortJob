@@ -55,10 +55,7 @@ const LoginHistory = () => {
   return (
     <div className="max-w-3xl mx-auto p-4 md:p-6 pb-20">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold font-heading flex items-center gap-2">
-          <ShieldCheck className="w-6 h-6 text-primary" />
-          Login History
-        </h1>
+        <h1 className="text-2xl font-bold font-heading">Login History</h1>
         <p className="text-sm text-base-content/50 mt-1">
           Your security verification records are visible only to you and platform admins.
         </p>
@@ -145,7 +142,7 @@ const LoginHistory = () => {
                 </button>
                 <ul
                   tabIndex={0}
-                  className="dropdown-content menu z-20 w-40 rounded-box border border-base-300 bg-base-100 p-1.5 text-xs shadow-xl"
+                  className="z-app-dropdown dropdown-content menu w-40 rounded-box border border-base-300 bg-base-100 p-1.5 text-xs shadow-xl"
                 >
                   <li>
                     <button

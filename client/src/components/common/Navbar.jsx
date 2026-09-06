@@ -1,7 +1,5 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
-  Search,
   Bell,
   MessageCircle,
   LogOut,
@@ -12,50 +10,31 @@ import useAuthStore from "../../store/authStore";
 import { useSocket } from "../../context/SocketContext";
 import UserAvatar from "./UserAvatar";
 import Brand from "./Brand";
+import GlobalSearch from "./GlobalSearch";
 
 const Navbar = () => {
   const { user, logout } = useAuthStore();
-  const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
   const { notificationCount, messageCount } = useSocket();
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/explore?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
-
   return (
-    <nav className="hidden md:flex items-center justify-between px-4 lg:px-6 py-2.5 bg-base-100/95 backdrop-blur-md border-b border-base-300/80 sticky top-0 z-50 shadow-sm">
+    <nav className="z-app-navigation hidden md:flex items-center justify-between px-4 lg:px-6 py-2.5 bg-base-100/95 backdrop-blur-md border-b border-base-300/80 sticky top-0 shadow-sm">
       {/* Logo */}
       <Link to="/feed" className="flex items-center gap-2 shrink-0">
         <Brand size="sm" className="[&>span:last-child]:hidden lg:[&>span:last-child]:block" />
       </Link>
 
-      {/* Search Bar */}
-      <form onSubmit={handleSearch} className="flex-1 max-w-xl mx-8">
-        <label className="input input-bordered flex items-center gap-2 rounded-full">
-          <Search className="w-4 h-4 text-base-content/40" />
-          <input
-            type="text"
-            className="grow"
-            placeholder="Search users, jobs, posts..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </label>
-      </form>
+      <div className="flex-1" />
 
       {/* Right Icons */}
       <div className="flex items-center gap-1">
+        <GlobalSearch />
         <Link
           to="/notifications"
           className="btn btn-ghost btn-circle btn-sm hover:bg-primary/10 relative"
         >
           <Bell className="w-5 h-5" />
           {notificationCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 w-[18px] h-[18px] bg-error text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm">
+            <span className="count-badge count-badge-notification absolute -right-0.5 -top-0.5 h-[18px] min-w-[18px]">
               {notificationCount > 9 ? "9+" : notificationCount}
             </span>
           )}
@@ -66,7 +45,7 @@ const Navbar = () => {
         >
           <MessageCircle className="w-5 h-5" />
           {messageCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 w-[18px] h-[18px] bg-primary text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm">
+            <span className="count-badge count-badge-message absolute -right-0.5 -top-0.5 h-[18px] min-w-[18px]">
               {messageCount > 9 ? "9+" : messageCount}
             </span>
           )}
@@ -86,7 +65,7 @@ const Navbar = () => {
           </div>
           <ul
             tabIndex={0}
-            className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-xl border border-base-300/50 w-52 mt-2"
+            className="z-app-dropdown dropdown-content menu p-2 shadow-lg bg-base-100 rounded-xl border border-base-300/50 w-52 mt-2"
           >
             <li>
               <Link

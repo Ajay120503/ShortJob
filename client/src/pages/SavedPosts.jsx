@@ -109,9 +109,9 @@ const SavedPosts = () => {
 
   return (
     <div className="max-w-3xl mx-auto p-2 sm:p-4 md:p-6 pb-20 md:pb-6">
-      <div className="mb-4 rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
+      <div data-page-header className="mb-4 rounded-xl border border-base-300/70 bg-base-100 p-4 shadow-sm sm:p-5">
         <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <div data-page-heading-icon className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <BookmarkCheck className="h-5 w-5" />
           </div>
           <div>
@@ -126,7 +126,7 @@ const SavedPosts = () => {
       </div>
 
       {posts.length > 0 && (
-        <div className="mb-5 rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
+        <div data-filter-panel className="mb-5 rounded-xl border border-base-300/70 bg-base-100 p-3 shadow-sm">
           <label className="input input-bordered h-10 rounded-xl flex items-center gap-2">
             <Search className="h-4 w-4 text-base-content/35" />
             <input
@@ -319,7 +319,7 @@ const SavedPosts = () => {
                       </button>
                       <ul
                         tabIndex={0}
-                        className={`dropdown-content menu z-20 mt-1 w-40 rounded-box border p-1.5 text-xs shadow-xl ${
+                        className={`z-app-dropdown dropdown-content menu mt-1 w-40 rounded-box border p-1.5 text-xs shadow-xl ${
                           isSpecialAuthor
                             ? specialStyle.shell
                             : "border-base-300 bg-base-100"
