@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const { PERSON_NAME_MAX_LENGTH, isValidPersonName } = require('../utils/createValidation');
+const {
+  PERSON_NAME_MIN_LENGTH,
+  isValidPersonName,
+} = require('../utils/createValidation');
 
 const userSchema = new mongoose.Schema(
   {
@@ -8,12 +11,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Full name is required'],
       trim: true,
-      minlength: [2, 'Name must contain at least 2 characters'],
-      maxlength: [PERSON_NAME_MAX_LENGTH, `Name cannot exceed ${PERSON_NAME_MAX_LENGTH} characters`],
+      minlength: [PERSON_NAME_MIN_LENGTH, `Name must contain at least ${PERSON_NAME_MIN_LENGTH} characters`],
+      maxlength: [50, 'Name cannot exceed 50 characters'],
       match: [/^[\p{L}\p{M} .'-]+$/u, 'Name can contain only letters, spaces, apostrophes, periods, and hyphens'],
       validate: {
-        validator: isValidPersonName,
-        message: 'Name must contain at least 2 letters',
+        validator: (value) => isValidPersonName(value, { minLength: 3, maxLength: 50 }),
+        message: `Name must contain at least ${PERSON_NAME_MIN_LENGTH} letters`,
       },
     },
     email: {
@@ -94,7 +97,7 @@ const userSchema = new mongoose.Schema(
     institutionName: {
       type: String,
       trim: true,
-      maxlength: [150, 'Organization name cannot exceed 150 characters'],
+      maxlength: [50, 'Organization name cannot exceed 50 characters'],
       default: '',
     },
     institutionPic: {
@@ -103,7 +106,7 @@ const userSchema = new mongoose.Schema(
     },
     institutionType: {
       type: String,
-      enum: ['school', 'college', 'university', 'coaching', 'none', ''],
+      enum: ['school', 'college', 'university', 'coaching', 'other', 'none', ''],
       default: 'none',
     },
     bio: {
@@ -114,7 +117,7 @@ const userSchema = new mongoose.Schema(
     age: {
       type: Number,
       min: 18,
-      max: 100,
+      max: 60,
     },
     currentLocation: {
       lat: Number,
@@ -134,7 +137,7 @@ const userSchema = new mongoose.Schema(
     subject: {
       type: String,
       trim: true,
-      maxlength: [100, 'Subject cannot exceed 100 characters'],
+      maxlength: [58, 'Focus areas cannot exceed 58 characters'],
       default: '',
     },
     experience: {
@@ -143,31 +146,31 @@ const userSchema = new mongoose.Schema(
       max: [80, 'Experience cannot exceed 80 years'],
       default: 0,
     },
-    skills: [{ type: String, trim: true, maxlength: [50, 'Each skill must be 50 characters or fewer'] }],
-    qualifications: [{ type: String, trim: true, maxlength: [100, 'Each qualification must be 100 characters or fewer'] }],
+    skills: [{ type: String, trim: true, maxlength: [20, 'Each skill must be 20 characters or fewer'] }],
+    qualifications: [{ type: String, trim: true, maxlength: [20, 'Each qualification must be 20 characters or fewer'] }],
     address: {
       type: String,
       trim: true,
-      maxlength: [300, 'Address cannot exceed 300 characters'],
+      maxlength: [100, 'Address cannot exceed 100 characters'],
       default: '',
     },
     city: {
       type: String,
       trim: true,
-      maxlength: [100, 'City cannot exceed 100 characters'],
+      maxlength: [20, 'City cannot exceed 20 characters'],
       default: '',
     },
     state: {
       type: String,
       trim: true,
-      maxlength: [100, 'State cannot exceed 100 characters'],
+      maxlength: [20, 'State cannot exceed 20 characters'],
       default: '',
     },
     linkedinUrl: {
       type: String,
       trim: true,
       maxlength: [500, 'LinkedIn URL cannot exceed 500 characters'],
-      match: [/^(?:https?:\/\/)?(?:www\.)?linkedin\.com\/.+/i, 'Please enter a valid LinkedIn URL'],
+      match: [/^https?:\/\/(?:www\.)?linkedin\.com\/.+/i, 'LinkedIn URL must start with http:// or https://'],
       default: '',
     },
     resumeUrl: {
@@ -177,16 +180,16 @@ const userSchema = new mongoose.Schema(
     profession: {
       type: String,
       trim: true,
-      maxlength: [120, 'Profession cannot exceed 120 characters'],
+      maxlength: [50, 'Profession cannot exceed 50 characters'],
       default: '',
     },
     isCurrentlyWorking: { type: Boolean, default: false },
-    currentPosition: { type: String, trim: true, maxlength: [120, 'Current position cannot exceed 120 characters'], default: '' },
-    currentCompany: { type: String, trim: true, maxlength: [150, 'Current workplace cannot exceed 150 characters'], default: '' },
-    previousWork: { type: String, trim: true, maxlength: [1000, 'Previous work cannot exceed 1000 characters'], default: '' },
+    currentPosition: { type: String, trim: true, maxlength: [50, 'Current position cannot exceed 50 characters'], default: '' },
+    currentCompany: { type: String, trim: true, maxlength: [50, 'Current workplace cannot exceed 50 characters'], default: '' },
+    previousWork: { type: String, trim: true, maxlength: [100, 'Previous work cannot exceed 100 characters'], default: '' },
     lastActiveAt: { type: Date },
     activeDays: [{ type: String }],
-    interests: [{ type: String, trim: true, maxlength: [50, 'Each interest must be 50 characters or fewer'] }],
+    interests: [{ type: String, trim: true, maxlength: [20, 'Each interest must be 20 characters or fewer'] }],
     followers: [
       {
         type: mongoose.Schema.Types.ObjectId,
