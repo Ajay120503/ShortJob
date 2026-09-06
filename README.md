@@ -44,7 +44,10 @@ ShortJob is a full-stack MERN professional community platform for networking, po
 - Workplace name, address, city/state/country, coordinates, map preview, and map links for job posts.
 - Required qualifications display cleanly.
 - Skills required are shown compactly in cards and sidebars.
-- Filters for paid/unpaid, location, and opportunity type.
+- Synchronized filters for paid/unpaid, opportunity type, distance, and nearby locality/area.
+- Location-based discovery starts at a 5 km radius and supports preset or custom distances up to 1,000 km.
+- Nearby area choices update with the selected radius and are ordered by distance from the user.
+- Optional live location tracking refreshes nearby areas, job results, and job distance while the user moves; GPS jitter and server writes are throttled separately.
 - Applications with status workflow.
 - Applicant dashboard and application kanban with drag-and-drop status updates.
 - Applicant records can be exported as formatted Excel and PDF reports by the job poster.
@@ -70,13 +73,27 @@ ShortJob is a full-stack MERN professional community platform for networking, po
 - Explore excludes already-followed users from discovery sections where appropriate.
 - Popular, active, open-to-work, and admin filters.
 - Admin/special users display with unique styling.
+- The right sidebar has real user search and functional follow/unfollow actions in Who to Follow.
+
+### Global Search
+
+- A single icon opens a global search surface for users, jobs, posts, and application pages.
+- Results are grouped by type and use database IDs for exact profile, job, and post routes.
+- Multi-word and partial matching, debounced requests, stale-request cancellation, loading states, and empty states.
+- Full-screen mobile search with safe-area support, locked background scrolling, Escape/backdrop closing, and a document-level portal that avoids stacking-context clipping.
+- Responsive trigger placement prevents duplicate desktop icons: search appears in the left sidebar until the right sidebar becomes visible.
 
 ### Chat
 
 - One-to-one real-time conversations.
 - Duplicate conversation prevention.
-- Text, image, and file messages.
-- Typing indicators, read receipts, unread badges, and online status.
+- Text, photos, supported document files, and sticker messages; media is rendered outside the text bubble.
+- Reply by swipe/drag or message action, with compact quoted-message previews.
+- Emoji reactions with atomic database updates and responsive reaction controls.
+- Typing status is shown inside the composer placeholder.
+- Sent, delivered, and read states use single/double message ticks.
+- Online status respects the user's privacy setting, while chat avatars omit presence dots.
+- Resizable desktop conversation list and mobile composer/reaction sizing that remains aligned above the bottom navigation.
 - Custom confirmation modals for clearing/deleting chat.
 - Cloudinary cleanup for deleted chat files.
 
@@ -102,11 +119,13 @@ ShortJob is a full-stack MERN professional community platform for networking, po
   - Users can delete their own login records.
   - Super admins can delete login records globally.
   - Login audit Cloudinary photos are removed when audit records are deleted.
+- Users control saved location access and online-status visibility from Settings.
+- Camera and location actions use application confirmation UI before native browser permission prompts.
 - Blocked-screen UI matches the application shell while disabling actions.
 
 ### Admin Dashboard
 
-- Admin dashboard with users, moderation queue, settings, login records, and content detail pages.
+- Admin dashboard with users, moderation queue, settings, content detail pages, and super-admin-only login records.
 - Manual moderation for posts, jobs, and stories.
 - Rule-based moderation with score, severity, decision, and transparent flags.
 - Auto moderation and manual review can run in parallel.
@@ -118,7 +137,7 @@ ShortJob is a full-stack MERN professional community platform for networking, po
 ### Permissions
 
 - General users can use core platform features: posts, stories, jobs, applications, chat, profile, and explore.
-- Admins can review content, run rule checks, approve/reject content, inspect users, view login records, and update admin notes.
+- Admins can review content, run rule checks, approve/reject content, inspect user identity/moderation details, and update moderation notes.
 - Super admins can:
   - Promote users to admin.
   - Remove admin access.
@@ -127,6 +146,7 @@ ShortJob is a full-stack MERN professional community platform for networking, po
   - Grant/revoke trust badges.
   - Update platform settings.
   - Delete login records.
+  - View the login-audit list and individual login-audit records.
 - Top contributor and trust badges no longer grant admin permissions by themselves.
 
 ### Moderation & Fake Detection
@@ -148,6 +168,9 @@ ShortJob is a full-stack MERN professional community platform for networking, po
 - FontAwesome brand icon usage.
 - Updated PWA icons and favicon.
 - Mobile bottom bar uses the current user avatar for Profile.
+- Mobile header menu includes Explore People.
+- Notification and unread-message counters use dedicated high-contrast colors in light and dark mode.
+- Shared z-index tiers keep sticky content, dropdowns, sidebars, navigation, popovers, modals, story viewer, and global search in a predictable order.
 - Sidebar, bottom bar, admin UI, right sidebar, explore, jobs, saved posts, profile, job cards, post cards, comments, and blocked screen share the current app design language.
 - Responsive layouts use fuller mobile width with tighter side spacing and larger-screen split panels where useful.
 - Landing page uses updated visual sections and subtle scroll animations.
@@ -166,6 +189,7 @@ ShortJob/
 │   │   ├── components/
 │   │   │   ├── admin/
 │   │   │   ├── auth/
+│   │   │   ├── chat/
 │   │   │   ├── common/
 │   │   │   ├── job/
 │   │   │   ├── post/
@@ -299,6 +323,8 @@ node server.js
 | GET | `/api/users/:id/followers` | Followers |
 | GET | `/api/users/:id/following` | Following |
 | PATCH | `/api/users/me/opportunity-status` | Toggle open to opportunities |
+| PATCH | `/api/users/me/location` | Save current location and enable location access |
+| PATCH | `/api/users/me/login-audit` | Update personal login-audit preference |
 | POST | `/api/users/me/badges` | Update profile badges |
 | PUT | `/api/users/:id/timeline` | Update career timeline |
 | GET | `/api/users/online` | Online user IDs |
@@ -328,15 +354,23 @@ node server.js
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | GET | `/api/jobs` | List jobs |
+| GET | `/api/jobs/nearby-areas` | Areas within the requested radius |
+| GET | `/api/jobs/nearby-cities` | Cities within 100 km (compatibility endpoint) |
+| GET | `/api/jobs/map` | Job map data |
+| GET | `/api/jobs/my/list` | Current user's jobs |
+| GET | `/api/jobs/my/archive` | Current user's archived jobs |
 | POST | `/api/jobs` | Create job |
 | GET | `/api/jobs/:id` | Job detail |
 | PUT | `/api/jobs/:id` | Update job |
 | DELETE | `/api/jobs/:id` | Delete job |
 | POST | `/api/jobs/:id/apply` | Apply |
 | GET | `/api/jobs/:id/applicants` | Applicants |
-| PUT | `/api/applications/:id/status` | Update application status |
+| PUT | `/api/jobs/applications/:id/status` | Update application status |
 | GET | `/api/jobs/applications/my` | My applications |
 | GET | `/api/jobs/matched` | Matched jobs |
+| POST | `/api/jobs/:id/quick-apply` | Quick apply |
+| POST | `/api/jobs/:id/qna` | Ask a job question |
+| POST | `/api/jobs/:id/qna/:qnaId/answer` | Answer a job question |
 
 ### Stories
 
@@ -354,10 +388,19 @@ node server.js
 | GET | `/api/chat/conversations` | Conversations |
 | POST | `/api/chat/conversations` | Create/get conversation |
 | DELETE | `/api/chat/conversations/:id` | Delete conversation |
-| DELETE | `/api/chat/conversations/:id/messages` | Clear conversation messages |
+| DELETE | `/api/chat/conversations/:id/clear` | Clear conversation messages for the current user |
 | GET | `/api/chat/conversations/:id/messages` | Messages |
 | POST | `/api/chat/messages` | Send message |
 | PUT | `/api/chat/messages/:id/read` | Mark read |
+| POST | `/api/chat/messages/:id/react` | Toggle an emoji reaction |
+| PUT | `/api/chat/messages/:id` | Edit a text message |
+| DELETE | `/api/chat/messages/:id` | Delete a message |
+
+### Global Search
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/search?q=...` | Search users, jobs, and posts together |
 
 ### Notifications
 
@@ -389,12 +432,11 @@ node server.js
 | PUT | `/api/admin/content/:type/:id/run-check` | Run rule check |
 | PUT | `/api/admin/content/:type/:id/approve` | Approve content |
 | PUT | `/api/admin/content/:type/:id/reject` | Reject content |
-| GET | `/api/admin/login-records` | Login audit records |
-| GET | `/api/admin/login-records/:id` | Login audit detail |
+| GET | `/api/admin/login-records` | Login audit records, super admin |
+| GET | `/api/admin/login-records/:id` | Login audit detail, super admin |
 | DELETE | `/api/admin/login-records/:id` | Delete login record, super admin |
 
-## Notes
-# Redis / Render Key Value
+## Redis / Render Key Value
 
 The API uses Redis as an optional cache-aside layer for feeds, jobs, stories,
 comments, profiles, and searches. MongoDB remains the source of truth and the
