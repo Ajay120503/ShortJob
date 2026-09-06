@@ -2,6 +2,12 @@ const Story = require('../models/Story');
 const { uploadToCloudinary, deleteFromCloudinary } = require('../middlewares/upload.middleware');
 const { getInitialModerationState, applyInitialRuleModeration } = require('../utils/adminSettings');
 const { sortByPriorityAndNewest } = require('../utils/contentOrdering');
+const {
+  MIN_STANDALONE_CONTENT_LENGTH,
+  cleanString,
+  sendValidationError,
+  sendCreateError,
+} = require('../utils/createValidation');
 
 const USER_SIGNAL_SELECT = 'name profilePic badges role category institutionName institutionPic openToOpportunities isAdmin isSuperAdmin lastActiveAt activeDays followers profileThemeVariant';
 
@@ -11,16 +17,22 @@ const createStory = async (req, res) => {
   let uploadedStoryPublicId = '';
   let storyCreated = false;
   try {
-    const { text } = req.body;
+    const text = cleanString(req.body.text);
     if (!req.file && !text) {
-      return res.status(400).json({ message: 'Story must have an image or text.' });
+      return sendValidationError(res, { form: 'Add an image or some text to your story.' });
     }
+    if (!req.file && text.length < MIN_STANDALONE_CONTENT_LENGTH) {
+      return sendValidationError(res, {
+        storyText: `Text-only stories must contain at least ${MIN_STANDALONE_CONTENT_LENGTH} characters.`,
+      });
+    }
+    if (text.length > 200) return sendValidationError(res, { storyText: 'Story caption cannot exceed 200 characters.' });
 
     const moderationState = await getInitialModerationState('story');
 
     const storyData = {
       author: req.user._id,
-      text: text || '',
+      text,
       ...moderationState,
     };
 
@@ -48,7 +60,7 @@ const createStory = async (req, res) => {
       await deleteFromCloudinary(uploadedStoryPublicId);
     }
     console.error('Create story error:', error);
-    res.status(500).json({ message: 'Server error.' });
+    return sendCreateError(res, error, 'The story could not be created. Please try again.');
   }
 };
 

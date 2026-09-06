@@ -7,6 +7,13 @@ const { uploadToCloudinary, deleteFromCloudinary } = require('../middlewares/upl
 const { runFakeDetectionRuleOnly } = require('../utils/fakeDetectionRuleOnly');
 const { getInitialModerationState, applyInitialRuleModeration } = require('../utils/adminSettings');
 const { pickPriorityPage, toId } = require('../utils/contentOrdering');
+const {
+  MIN_STANDALONE_CONTENT_LENGTH,
+  cleanString,
+  sendValidationError,
+  sendCreateError,
+  isHttpUrl,
+} = require('../utils/createValidation');
 
 const USER_SIGNAL_SELECT = 'name profilePic badges role category institutionName institutionPic openToOpportunities isAdmin isSuperAdmin lastActiveAt activeDays followers profileThemeVariant';
 
@@ -133,19 +140,45 @@ const createPost = async (req, res) => {
   const uploadedPublicIds = [];
   let postCreated = false;
   try {
-    const { text, type, tags, eventDate, eventLocation, resourceUrl, resourceFileType } = req.body;
+    const { eventDate, resourceFileType } = req.body;
+    const text = cleanString(req.body.text);
+    const type = cleanString(req.body.type) || 'general';
+    const eventLocation = cleanString(req.body.eventLocation);
+    const resourceUrl = cleanString(req.body.resourceUrl);
+    const allowedTypes = ['general', 'announcement', 'achievement', 'noticeboard', 'question', 'poll', 'event', 'resource_share', 'celebration', 'discussion'];
+    const errors = {};
 
+    if (!allowedTypes.includes(type)) errors.type = 'Choose a valid post type.';
     if (!text && (!req.files || req.files.length === 0) && !['poll', 'event', 'resource_share'].includes(type)) {
-      return res.status(400).json({ message: 'Post must have text or images.' });
+      errors.form = 'Add some text or at least one image.';
     }
+    if (
+      text
+      && text.length < MIN_STANDALONE_CONTENT_LENGTH
+      && (!req.files || req.files.length === 0)
+      && !['poll', 'event', 'resource_share'].includes(type)
+    ) {
+      errors.text = `Text-only posts must contain at least ${MIN_STANDALONE_CONTENT_LENGTH} characters.`;
+    }
+    if (text.length > 2000) errors.text = 'Post text cannot exceed 2000 characters.';
+    if (type === 'noticeboard' && !isInstitutionMember(req.user)) {
+      errors.type = 'Noticeboard posts are available only to verified institution members.';
+    }
+
+    const rawTags = Array.isArray(req.body.tags) ? req.body.tags : String(req.body.tags || '').split(',');
+    const normalizedTags = [...new Set(rawTags.map(cleanString).filter(Boolean))];
+    if (normalizedTags.length > 10) errors.tags = 'Use no more than 10 tags.';
+    if (normalizedTags.some((tag) => tag.length > 30)) errors.tags = 'Each tag must be 30 characters or fewer.';
+
+    if (Object.keys(errors).length) return sendValidationError(res, errors);
 
     const moderationState = await getInitialModerationState('post');
 
     const postData = {
       author: req.user._id,
-      text: text || '',
-      type: type || 'general',
-      tags: tags ? (typeof tags === 'string' ? tags.split(',').map(t => t.trim()) : tags) : [],
+      text,
+      type,
+      tags: normalizedTags,
       images: [],
       ...moderationState,
     };
@@ -153,18 +186,28 @@ const createPost = async (req, res) => {
     if (type === 'poll') {
       let options;
       try { options = JSON.parse(req.body.pollOptions || '[]'); } catch (_) { options = []; }
+      if (!Array.isArray(options)) options = [];
       options = options.map((option) => String(option).trim()).filter(Boolean);
-      if (options.length < 2 || options.length > 6) return res.status(400).json({ message: 'Polls require 2 to 6 options.' });
+      if (options.length < 2 || options.length > 6) return sendValidationError(res, { pollOptions: 'Polls require 2 to 6 options.' });
+      if (options.some((option) => option.length > 100)) return sendValidationError(res, { pollOptions: 'Each poll option must be 100 characters or fewer.' });
+      if (new Set(options.map((option) => option.toLowerCase())).size !== options.length) return sendValidationError(res, { pollOptions: 'Poll options must be different from each other.' });
       postData.pollOptions = options.map((option) => ({ text: option, votes: [] }));
     }
     if (type === 'event') {
-      if (!eventDate || Number.isNaN(new Date(eventDate).getTime()) || !eventLocation?.trim()) return res.status(400).json({ message: 'Event date and location are required.' });
-      postData.eventDetails = { date: new Date(eventDate), location: eventLocation.trim(), rsvps: [] };
+      const parsedEventDate = new Date(eventDate);
+      const eventErrors = {};
+      if (!eventDate || Number.isNaN(parsedEventDate.getTime())) eventErrors.eventDate = 'Choose a valid event date and time.';
+      else if (parsedEventDate <= new Date()) eventErrors.eventDate = 'Event date must be in the future.';
+      if (!eventLocation) eventErrors.eventLocation = 'Event location is required.';
+      else if (eventLocation.length > 200) eventErrors.eventLocation = 'Event location cannot exceed 200 characters.';
+      if (Object.keys(eventErrors).length) return sendValidationError(res, eventErrors);
+      postData.eventDetails = { date: parsedEventDate, location: eventLocation, rsvps: [] };
     }
     if (type === 'resource_share') {
-      if (!resourceUrl?.trim()) return res.status(400).json({ message: 'A resource link is required.' });
-      postData.resourceUrl = resourceUrl.trim();
-      postData.resourceFileType = resourceFileType || 'link';
+      if (!resourceUrl) return sendValidationError(res, { resourceUrl: 'A resource link is required.' });
+      if (resourceUrl.length > 1000 || !isHttpUrl(resourceUrl)) return sendValidationError(res, { resourceUrl: 'Enter a valid http:// or https:// resource link.' });
+      postData.resourceUrl = resourceUrl;
+      postData.resourceFileType = resourceFileType === 'link' ? resourceFileType : 'link';
     }
 
     // Set expiry for noticeboard posts
@@ -204,7 +247,7 @@ const createPost = async (req, res) => {
       }
     }
     console.error('Create post error:', error);
-    res.status(500).json({ message: 'Server error.' });
+    return sendCreateError(res, error, 'The post could not be created. Please try again.');
   }
 };
 
@@ -224,16 +267,28 @@ const updatePost = async (req, res) => {
     }
 
     const { text, type, tags } = req.body;
+    const allowedTypes = ['general', 'announcement', 'achievement', 'noticeboard', 'question', 'poll', 'event', 'resource_share', 'celebration', 'discussion'];
+    const nextType = type === undefined ? undefined : cleanString(type);
+
+    if (nextType !== undefined && !allowedTypes.includes(nextType)) {
+      return sendValidationError(res, { type: 'Choose a valid post type.' });
+    }
+    if (nextType === 'noticeboard' && !isInstitutionMember(req.user)) {
+      return sendValidationError(res, { type: 'Noticeboard posts are available only to verified institution members.' });
+    }
 
     // Update text
     if (text !== undefined) {
-      post.text = text;
+      post.text = cleanString(text);
+      if (post.text.length > 2000) {
+        return sendValidationError(res, { text: 'Post text cannot exceed 2000 characters.' });
+      }
     }
 
     // Update type
-    if (type !== undefined) {
-      post.type = type;
-      if (type === 'noticeboard') {
+    if (nextType !== undefined) {
+      post.type = nextType;
+      if (nextType === 'noticeboard') {
         // F11 — Refresh expiry when marked as noticeboard
         post.noticeboardExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48 hours
       } else if (post.noticeboardExpiresAt) {
@@ -244,7 +299,13 @@ const updatePost = async (req, res) => {
 
     // Update tags
     if (tags !== undefined) {
-      post.tags = typeof tags === 'string' ? tags.split(',').map(t => t.trim()) : tags;
+      const rawTags = Array.isArray(tags) ? tags : String(tags).split(',');
+      const normalizedTags = [...new Set(rawTags.map(cleanString).filter(Boolean))];
+      if (normalizedTags.length > 10) return sendValidationError(res, { tags: 'Use no more than 10 tags.' });
+      if (normalizedTags.some((tag) => tag.length > 30)) {
+        return sendValidationError(res, { tags: 'Each tag must be 30 characters or fewer.' });
+      }
+      post.tags = normalizedTags;
     }
 
     // Remove images marked for deletion (comma-separated or JSON array of publicIds)
@@ -279,6 +340,17 @@ const updatePost = async (req, res) => {
       }
     }
 
+    post.text = cleanString(post.text);
+    if (
+      !['poll', 'event', 'resource_share'].includes(post.type)
+      && post.images.length === 0
+      && post.text.length < MIN_STANDALONE_CONTENT_LENGTH
+    ) {
+      return sendValidationError(res, {
+        text: `Text-only posts must contain at least ${MIN_STANDALONE_CONTENT_LENGTH} characters.`,
+      });
+    }
+
     await post.save();
 
     const populatedPost = await Post.findById(post._id)
@@ -303,7 +375,7 @@ const updatePost = async (req, res) => {
     res.json({ success: true, post: populatedPost });
   } catch (error) {
     console.error('Update post error:', error);
-    res.status(500).json({ message: 'Server error.' });
+    return sendCreateError(res, error, 'The post could not be updated. Please try again.');
   }
 };
 

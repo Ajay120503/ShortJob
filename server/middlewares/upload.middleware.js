@@ -4,13 +4,22 @@ const streamifier = require('streamifier');
 
 // Use memory storage for multer (buffer in memory)
 const storage = multer.memoryStorage();
+const ALLOWED_IMAGE_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+]);
 
 // File filter for images
 const imageFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image')) {
+  if (ALLOWED_IMAGE_TYPES.has(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Not an image! Please upload only images.'), false);
+    const error = new Error('Unsupported image type. Upload a JPG, PNG, GIF, or WebP image.');
+    error.code = 'INVALID_IMAGE_TYPE';
+    error.field = file.fieldname;
+    cb(error, false);
   }
 };
 
@@ -40,29 +49,36 @@ const chatFileFilter = (req, file, cb) => {
     'application/vnd.ms-powerpoint',
     'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'application/zip',
+    'application/x-zip-compressed',
   ];
 
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('File type not allowed.'), false);
+    const error = new Error('Unsupported attachment type. Upload an image, PDF, Office document, text file, spreadsheet, presentation, or ZIP file.');
+    error.code = 'INVALID_CHAT_FILE_TYPE';
+    error.field = file.fieldname;
+    cb(error, false);
   }
 };
 
 // File filter for profile uploads (images + PDF for resume)
 const profileFileFilter = (req, file, cb) => {
-  const allowedTypes = [
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-    'image/webp',
-    'application/pdf',
-  ];
+  const allowedTypes = file.fieldname === 'resume' || file.fieldname === 'document'
+    ? [...ALLOWED_IMAGE_TYPES, 'application/pdf']
+    : [...ALLOWED_IMAGE_TYPES];
 
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Please upload only images or PDF files.'), false);
+    const error = new Error(
+      file.fieldname === 'resume' || file.fieldname === 'document'
+        ? 'Upload a JPG, PNG, GIF, WebP, or PDF file.'
+        : 'Upload a JPG, PNG, GIF, or WebP image.'
+    );
+    error.code = 'INVALID_PROFILE_FILE_TYPE';
+    error.field = file.fieldname;
+    cb(error, false);
   }
 };
 
@@ -82,13 +98,19 @@ const uploadPDF = multer({
 const uploadChatFile = multer({
   storage,
   fileFilter: chatFileFilter,
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
+  limits: { fileSize: 20 * 1024 * 1024, files: 1 }, // 20MB
 });
 
 const uploadPostImages = multer({
   storage,
   fileFilter: imageFilter,
-  limits: { fileSize: 10 * 1024 * 1024, files: 5 }, // 10MB, max 5 files
+  limits: { fileSize: 5 * 1024 * 1024, files: 4 },
+});
+
+const uploadCreationImage = multer({
+  storage,
+  fileFilter: imageFilter,
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
 });
 
 // Cloudinary upload helper
@@ -153,6 +175,7 @@ module.exports = {
   uploadPDF,
   uploadChatFile,
   uploadPostImages,
+  uploadCreationImage,
   uploadProfile,
   uploadToCloudinary,
   deleteFromCloudinary,
