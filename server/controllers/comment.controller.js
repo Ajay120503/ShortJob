@@ -19,6 +19,9 @@ const getComments = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
+    const highlightId = /^[a-f\d]{24}$/i.test(String(req.query.highlight || ''))
+      ? String(req.query.highlight)
+      : '';
 
     const post = await Post.findById(postId).select('author status');
     if (!post || !canViewPost(post, req.user)) {
@@ -39,7 +42,37 @@ const getComments = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    const total = await Comment.countDocuments({ post: postId, parentComment: null });
+    if (highlightId) {
+      const highlighted = await Comment.findOne({ _id: highlightId, post: postId }).select('parentComment');
+      const rootId = highlighted?.parentComment || highlighted?._id;
+      const rootLoaded = rootId && comments.some((comment) => comment._id.toString() === rootId.toString());
+      if (rootId && !rootLoaded) {
+        const highlightedThread = await Comment.findById(rootId)
+          .populate('author', 'name profilePic role openToOpportunities profileThemeVariant')
+          .populate({
+            path: 'replies',
+            populate: {
+              path: 'author',
+              select: 'name profilePic role openToOpportunities profileThemeVariant',
+            },
+          });
+        if (highlightedThread) comments.push(highlightedThread);
+      }
+    }
+
+    const [total, allTotal] = await Promise.all([
+      Comment.countDocuments({ post: postId, parentComment: null }),
+      Comment.countDocuments({ post: postId }),
+    ]);
+
+    // Repair references left behind by older comment writes that failed while
+    // revalidating the parent post.
+    if (comments.length) {
+      await Post.updateOne(
+        { _id: postId },
+        { $addToSet: { comments: { $each: comments.map((comment) => comment._id) } } }
+      );
+    }
 
     res.json({
       success: true,
@@ -48,6 +81,7 @@ const getComments = async (req, res) => {
         page,
         limit,
         total,
+        allTotal,
         pages: Math.ceil(total / limit),
       },
     });
@@ -65,6 +99,7 @@ const addComment = async (req, res) => {
     const text = cleanString(req.body.text);
 
     if (!text) return sendValidationError(res, { text: 'Comment text is required.' });
+    if (text.length < 1) return sendValidationError(res, { text: 'Comment must contain at least 1 character.' });
     if (text.length > 500) return sendValidationError(res, { text: 'Comment cannot exceed 500 characters.' });
 
     const post = await Post.findById(postId);
@@ -83,8 +118,10 @@ const addComment = async (req, res) => {
     });
 
     // Add comment reference to post
-    post.comments.push(comment._id);
-    await post.save();
+    await Post.updateOne(
+      { _id: postId },
+      { $addToSet: { comments: comment._id } }
+    );
 
     const populatedComment = await Comment.findById(comment._id)
       .populate('author', 'name profilePic role openToOpportunities profileThemeVariant');
@@ -131,6 +168,7 @@ const replyToComment = async (req, res) => {
     const text = cleanString(req.body.text);
 
     if (!text) return sendValidationError(res, { text: 'Reply text is required.' });
+    if (text.length < 1) return sendValidationError(res, { text: 'Reply must contain at least 1 character.' });
     if (text.length > 500) return sendValidationError(res, { text: 'Reply cannot exceed 500 characters.' });
 
     const parentComment = await Comment.findById(commentId);
@@ -146,8 +184,10 @@ const replyToComment = async (req, res) => {
     });
 
     // Add reply reference to parent comment
-    parentComment.replies.push(reply._id);
-    await parentComment.save();
+    await Comment.updateOne(
+      { _id: commentId },
+      { $addToSet: { replies: reply._id } }
+    );
 
     const populatedReply = await Comment.findById(reply._id)
       .populate('author', 'name profilePic role openToOpportunities profileThemeVariant');
@@ -192,11 +232,14 @@ const likeComment = async (req, res) => {
 
     const isLiked = comment.likes.includes(req.user._id);
 
-    if (isLiked) {
-      comment.likes.pull(req.user._id);
-    } else {
-      comment.likes.push(req.user._id);
+    await Comment.updateOne(
+      { _id: comment._id },
+      isLiked
+        ? { $pull: { likes: req.user._id } }
+        : { $addToSet: { likes: req.user._id } }
+    );
 
+    if (!isLiked) {
       // Notify comment author
       if (comment.author.toString() !== req.user._id.toString()) {
         await Notification.create({
@@ -218,12 +261,12 @@ const likeComment = async (req, res) => {
       }
     }
 
-    await comment.save();
+    const updatedComment = await Comment.findById(comment._id).select('likes');
 
     res.json({
       success: true,
       isLiked: !isLiked,
-      likesCount: comment.likes.length,
+      likesCount: updatedComment?.likes?.length || 0,
     });
   } catch (error) {
     console.error('Like comment error:', error);
