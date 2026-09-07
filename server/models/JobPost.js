@@ -1,4 +1,27 @@
 const mongoose = require('mongoose');
+const moderationMetaFields = require('../utils/moderationMetaFields');
+
+const locationPointSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      enum: ['Point'],
+      required: true,
+    },
+    coordinates: {
+      type: [Number],
+      required: true,
+      validate: {
+        validator: (coordinates) =>
+          Array.isArray(coordinates) &&
+          coordinates.length === 2 &&
+          coordinates.every(Number.isFinite),
+        message: 'Location point must contain valid longitude and latitude coordinates',
+      },
+    },
+  },
+  { _id: false },
+);
 
 const jobPostSchema = new mongoose.Schema(
   {
@@ -76,8 +99,13 @@ const jobPostSchema = new mongoose.Schema(
     },
     stipend: {
       type: Number,
-      required: [true, 'Paid amount is required'],
-      min: [0.01, 'Paid amount must be greater than zero'],
+      required: [true, 'Payout / salary is required'],
+      min: [0.01, 'Payout / salary must be at least 0.01'],
+      max: [1000000000, 'Payout / salary cannot exceed 1,000,000,000'],
+      validate: {
+        validator: (value) => Math.abs(value - Math.round(value * 100) / 100) < 1e-9,
+        message: 'Payout / salary can have no more than 2 decimal places',
+      },
     },
     location: {
       type: String,
@@ -86,35 +114,35 @@ const jobPostSchema = new mongoose.Schema(
     },
     workplaceName: {
       type: String,
-      required: [true, 'Workplace name is required'],
+      required: function requireWorkplaceName() { return this.location !== 'remote'; },
       trim: true,
       minlength: [3, 'Workplace name must contain at least 3 characters'],
       maxlength: [50, 'Workplace name cannot exceed 50 characters'],
     },
     workplaceAddress: {
       type: String,
-      required: [true, 'Street address is required'],
+      required: function requireWorkplaceAddress() { return this.location !== 'remote'; },
       trim: true,
       minlength: [3, 'Street address must contain at least 3 characters'],
       maxlength: [100, 'Street address cannot exceed 100 characters'],
     },
     workplaceCity: {
       type: String,
-      required: [true, 'City is required'],
+      required: function requireWorkplaceCity() { return this.location !== 'remote'; },
       trim: true,
       minlength: [3, 'City must contain at least 3 characters'],
       maxlength: [50, 'City cannot exceed 50 characters'],
     },
     workplaceState: {
       type: String,
-      required: [true, 'State is required'],
+      required: function requireWorkplaceState() { return this.location !== 'remote'; },
       trim: true,
       minlength: [3, 'State must contain at least 3 characters'],
       maxlength: [50, 'State cannot exceed 50 characters'],
     },
     workplaceCountry: {
       type: String,
-      required: [true, 'Country is required'],
+      required: function requireWorkplaceCountry() { return this.location !== 'remote'; },
       trim: true,
       minlength: [3, 'Country must contain at least 3 characters'],
       maxlength: [50, 'Country cannot exceed 50 characters'],
@@ -174,9 +202,11 @@ const jobPostSchema = new mongoose.Schema(
       lat: { type: Number },
       lng: { type: Number },
     },
+    // Keep this field absent when geocoding is unavailable. A partial GeoJSON
+    // point (for example, `{ type: 'Point' }`) is rejected by the 2dsphere index.
     location_point: {
-      type: { type: String, enum: ['Point'], default: 'Point' },
-      coordinates: { type: [Number], default: undefined },
+      type: locationPointSchema,
+      default: undefined,
     },
     qna: [{
       question: { type: String, required: true, trim: true, maxlength: [500, 'Question cannot exceed 500 characters'] },
@@ -192,22 +222,7 @@ const jobPostSchema = new mongoose.Schema(
       enum: ['pending_review', 'approved', 'rejected', 'flagged'],
       default: 'approved',
     },
-    moderationMeta: {
-      reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-      reviewedAt: Date,
-      reviewMethod: {
-        type: String,
-        enum: ['admin_manual', 'auto_approved', 'auto_rejected', 'auto_flagged'],
-      },
-      reviewNotes: String,
-      autoScore: Number,
-      autoFlags: [mongoose.Schema.Types.Mixed],
-      autoReason: String,
-      autoDecision: String,
-      autoSeverity: String,
-      autoReviewedAt: Date,
-      adminWindowExpiredAt: Date,
-    },
+    moderationMeta: moderationMetaFields,
   },
   {
     timestamps: true,

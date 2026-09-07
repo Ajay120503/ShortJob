@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { X, Eye } from "lucide-react";
 import API from "../../utils/axios";
 import UserAvatar from "../common/UserAvatar";
-import UserSignalBadge from "../common/UserSignalBadge";
 import { getUserSignal } from "../../utils/userSignals";
 
 const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
@@ -71,6 +70,8 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
   if (!currentStory) return null;
   const authorSignal = getUserSignal(group.author);
   const isAdminAuthor = authorSignal?.key === "admin";
+  const storyText = String(currentStory.text || "").trim();
+  const hasMedia = Boolean(currentStory.image?.url);
 
   return (
     <div
@@ -104,8 +105,8 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
                 idx < currentIndex
                   ? "w-full"
                   : idx === currentIndex
-                  ? "animate-[storyProgress_5s_linear]"
-                  : "w-0"
+                    ? "animate-[storyProgress_5s_linear]"
+                    : "w-0"
               }`}
             />
           </div>
@@ -114,13 +115,17 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
 
       {/* Author info */}
       <div className="absolute top-8 left-4 flex items-center gap-2 z-10">
-        <UserAvatar user={group.author} size={32} showPresence={false} />
+        <UserAvatar
+          user={group.author}
+          size={32}
+          showPresence={false}
+          showAdminBadge={false}
+        />
         <div>
           <div className="flex items-center gap-2">
             <p className="text-white text-sm font-medium">
               {group.author?.name}
             </p>
-            <UserSignalBadge user={group.author} />
             {currentStory.status && currentStory.status !== "approved" && (
               <span
                 className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
@@ -135,10 +140,12 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
               </span>
             )}
           </div>
-          {group.author?._id === currentUserId && <p className="text-white/60 text-xs flex items-center gap-1">
-            <Eye className="w-3 h-3" /> {currentStory.viewers?.length || 0}{" "}
-            views
-          </p>}
+          {group.author?._id === currentUserId && (
+            <p className="text-white/60 text-xs flex items-center gap-1">
+              <Eye className="w-3 h-3" /> {currentStory.viewers?.length || 0}{" "}
+              views
+            </p>
+          )}
         </div>
       </div>
 
@@ -169,19 +176,23 @@ const StoryViewer = ({ group, currentUserId, onClose, onViewed }) => {
             alt=""
             className="max-h-[80vh] max-w-full object-contain rounded-lg"
           />
-        ) : currentStory.text ? (
-          <div className="text-white text-center max-w-md">
-            <p className="text-xl">{currentStory.text}</p>
+        ) : storyText ? (
+          <div className="z-20 max-h-[65vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-white/15 bg-white/10 px-6 py-8 text-center text-white shadow-2xl backdrop-blur-sm sm:px-10">
+            <p className="whitespace-pre-wrap break-words text-xl font-medium leading-relaxed sm:text-2xl">
+              {storyText}
+            </p>
           </div>
         ) : null}
       </div>
 
       {/* Text overlay at bottom */}
-      {currentStory.text && (
-        <div className="absolute bottom-8 left-0 right-0 text-center px-8">
-          <p className="text-white text-lg font-medium drop-shadow-lg">
-            {currentStory.text}
-          </p>
+      {hasMedia && storyText && (
+        <div className="pointer-events-none absolute bottom-[max(2rem,env(safe-area-inset-bottom))] left-0 right-0 z-20 px-4 sm:px-8">
+          <div className="mx-auto max-h-[30vh] w-fit max-w-2xl overflow-y-auto rounded-2xl border border-white/15 bg-black/70 px-4 py-3 text-center shadow-2xl backdrop-blur-md sm:px-6">
+            <p className="whitespace-pre-wrap break-words text-sm font-medium leading-relaxed text-white sm:text-base">
+              {storyText}
+            </p>
+          </div>
         </div>
       )}
     </div>
