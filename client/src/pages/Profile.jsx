@@ -220,14 +220,14 @@ const Profile = () => {
     <div className="max-w-4xl mx-auto p-2 sm:p-4 md:p-6 pb-20 md:pb-6">
       {/* ============ PROFILE HEADER ============ */}
       <div
-        className={`overflow-hidden rounded-xl border shadow-sm mb-5 md:mb-6 ${
+        className={`profile-header overflow-hidden rounded-2xl border shadow-sm mb-5 md:mb-6 ${
           isSpecialProfile
             ? specialStyle.shell
             : "bg-base-100 border-base-300/50"
         }`}
       >
         <div
-          className={`h-20 md:h-24 ${
+          className={`profile-cover h-24 md:h-32 ${
             isSpecialProfile ? specialStyle.soft : "bg-primary/10"
           }`}
         />
@@ -255,9 +255,9 @@ const Profile = () => {
           </div>
 
           {/* Info */}
-          <div className="flex-1 text-center md:text-left min-w-0">
+          <div className="flex-1 text-center md:text-left min-w-0 md:pt-16">
             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-4 mb-4">
-              <h1 className="text-xl md:text-2xl font-bold font-heading flex items-center justify-center md:justify-start gap-2 flex-wrap min-w-0">
+              <h1 className="text-xl md:text-2xl font-bold font-heading flex items-center justify-center md:justify-start gap-2 flex-wrap min-w-0 [overflow-wrap:anywhere]">
                 {profile.name}
                 <VerifiedBadge verifiedStatus={profile.verifiedStatus} />
                 <UserSignalBadge user={profile} size="sm" />
@@ -295,7 +295,7 @@ const Profile = () => {
             </div>
 
             {/* Stats */}
-            <div className="mb-4 flex items-center justify-center gap-4 lg:pt-4 pt-0 text-sm md:justify-start">
+            <div className="profile-stats mb-4 flex flex-wrap items-center justify-center gap-3 rounded-xl border border-base-300/60 bg-base-100/60 p-3 text-xs sm:text-sm md:justify-start">
               <div className="flex items-baseline gap-1.5">
                 <span className="font-bold text-base">{userPosts.length}</span>
                 <span className={mutedTextClass}>posts</span>
@@ -715,7 +715,8 @@ const Profile = () => {
               {userJobs.map((job) => (
                 <div
                   key={job._id}
-                  className={`rounded-xl border p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-4 cursor-pointer ${
+                  data-remote={job.location === "remote"}
+                  className={`profile-job-card rounded-xl border p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-4 cursor-pointer ${
                     isSpecialProfile
                       ? specialStyle.shell
                       : "bg-base-100 border-base-300/60 hover:border-primary/25"
@@ -738,7 +739,7 @@ const Profile = () => {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <h4 className="font-semibold text-sm sm:text-base line-clamp-1">
+                          <h4 className="profile-job-title font-semibold text-sm sm:text-base line-clamp-1">
                             {job.title}
                           </h4>
                           <p
@@ -746,13 +747,13 @@ const Profile = () => {
                           >
                             {job.institutionName}
                           </p>
-                          <div className="flex flex-wrap gap-1.5 mt-2">
+                          <div className="profile-job-details flex flex-wrap gap-1.5 mt-2">
                             <span className="badge badge-xs badge-success badge-soft">
                               Paid
                               {job.stipend > 0 &&
                                 ` · ${job.currency === "USD" ? "$" : "₹"}${job.stipend}`}
                             </span>
-                            <span className="badge badge-xs badge-outline capitalize">
+                            <span className="profile-job-location badge badge-xs badge-outline capitalize">
                               {getJobWorkplaceLabel(job)}
                             </span>
                             <span className="badge badge-xs badge-ghost">
@@ -790,8 +791,9 @@ const Profile = () => {
                           className="dropdown dropdown-end flex-shrink-0"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <button
-                            tabIndex={0}
+                            <button
+                              tabIndex={0}
+                              aria-label={`Actions for ${job.title}`}
                             className="btn btn-ghost btn-xs btn-circle"
                           >
                             <MoreHorizontal className="w-4 h-4" />

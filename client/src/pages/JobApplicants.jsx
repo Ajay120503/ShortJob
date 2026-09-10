@@ -199,7 +199,7 @@ const ApplicantCard = ({ app, onStatusUpdate }) => {
 
   return (
     <div
-      className={`overflow-hidden rounded-xl border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
+      className={`applicant-list-card overflow-hidden rounded-xl border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
         isSpecialApplicant
           ? `${specialStyle.shell} ${specialStyle.shellHover}`
           : "border-base-300/60 bg-base-100 hover:border-primary/25"
@@ -854,7 +854,7 @@ const JobApplicants = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-6">
+    <div className="applicants-page max-w-4xl mx-auto p-4 md:p-6">
       {/* Header */}
       <Link
         to={`/jobs/${id}`}
