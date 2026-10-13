@@ -450,3 +450,7 @@ variable. `/api/health` reports whether Redis is configured and connected.
 
 Successful content mutations invalidate cached reads immediately. Cached
 responses include `X-Cache: HIT`; uncached responses include `X-Cache: MISS`.
+
+### Email delivery on Render and Vercel
+
+ShortJob supports Gmail delivery through an authenticated Vercel HTTPS function, following the ScreenSync pattern. See [email service setup and tests](docs/email-service.md). Registration and reset requests now report delivery failures as HTTP 503, and OTPs are no longer printed to server logs.
