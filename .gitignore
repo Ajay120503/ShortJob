@@ -19,3 +19,4 @@ Thumbs.db
 .env.*
 # Environment templates contain placeholders only
 !.env.example
+docs
